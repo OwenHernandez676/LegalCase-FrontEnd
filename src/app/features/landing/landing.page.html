@@ -1,0 +1,47 @@
+<div class="landing">
+  <header class="nav">
+    <div class="brand">
+      <span class="logo"><lex-icon name="scale" [size]="20" /></span> LEGALCASE
+    </div>
+    <a routerLink="/login" class="btn btn-gold btn-sm">Iniciar sesión</a>
+  </header>
+
+  <section class="hero">
+    <span class="tag">Plataforma SaaS jurídica</span>
+    <h1>Gestione su despacho legal<br />con claridad y control</h1>
+    <p>LEGALCASE centraliza solicitudes, expedientes, agenda y comunicación
+       para despachos, abogados y clientes en una sola plataforma moderna.</p>
+    <div class="hero-cta">
+      <a routerLink="/login" class="btn btn-gold">Solicitar consulta legal <lex-icon name="arrow" [size]="16" /></a>
+      <a routerLink="/login" class="btn btn-ghost ghost-light">Ingresar a la plataforma</a>
+    </div>
+    <div class="stats">
+      @for (s of stats; track s.l) {
+        <div class="stat"><b>{{ s.v }}</b><span>{{ s.l }}</span></div>
+      }
+    </div>
+  </section>
+
+  <section class="services container">
+    <h2>Todo lo que su despacho necesita</h2>
+    <div class="svc-grid">
+      @for (s of services; track s.title) {
+        <div class="svc">
+          <span class="svc-ic"><lex-icon [name]="$any(s.icon)" [size]="22" /></span>
+          <h3>{{ s.title }}</h3><p>{{ s.desc }}</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="cta">
+    <h2>Comience hoy con LEGALCASE</h2>
+    <p>Únase a los despachos que ya digitalizaron su gestión legal.</p>
+    <a routerLink="/login" class="btn btn-gold">Empezar ahora</a>
+  </section>
+
+  <footer class="foot">
+    <span>LEGALCASE · Sistema Web de Gestión de Casos Legales</span>
+    <span class="muted">© 2026 · Desarrollo de Aplicaciones de Vanguardia</span>
+  </footer>
+</div>

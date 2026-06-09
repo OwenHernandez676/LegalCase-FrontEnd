@@ -1,0 +1,30 @@
+<lex-page-head title="Gestión Documental" sub="Repositorio de documentos organizados por expediente"
+  [crumbs]="['LEGALCASE','Gestión','Documentos']">
+  <button class="btn btn-gold btn-sm" (click)="upload()"><lex-icon name="upload" [size]="15" /> Subir documento</button>
+</lex-page-head>
+
+<lex-panel [noPad]="true">
+  <table class="tbl">
+    <thead><tr><th>Documento</th><th>Expediente</th><th>Tipo</th><th>Tamaño</th><th>Subido por</th><th>Fecha</th><th></th></tr></thead>
+    <tbody>
+      @for (d of docs(); track d.id) {
+        <tr>
+          <td><div class="user-cell"><span class="fic {{ kind(d.ext) }}"><lex-icon name="doc" [size]="16" /></span>
+            <b style="font-size:13px">{{ d.name }}</b></div></td>
+          <td><span class="case-id">{{ d.caseId }}</span></td>
+          <td><lex-chip [label]="d.ext" [kind]="kind(d.ext)" /></td>
+          <td class="muted" style="font-size:12.5px">{{ d.size }}</td>
+          <td style="font-size:12.5px">{{ d.by }}</td>
+          <td class="muted" style="font-size:12.5px">{{ d.date }}</td>
+          <td><button class="mini" (click)="download(d.name)"><lex-icon name="download" [size]="15" /></button></td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</lex-panel>
+
+<style>
+  .fic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;flex:none}
+  .mini{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;background:var(--surface-3);color:var(--ink-2)}
+  .mini:hover{background:var(--gold-wash);color:var(--gold)}
+</style>

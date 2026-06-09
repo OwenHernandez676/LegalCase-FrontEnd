@@ -1,0 +1,41 @@
+<lex-page-head title="Calendario Legal" sub="Mayo 2026 · audiencias, reuniones y vencimientos"
+  [crumbs]="['LEGALCASE','Agenda','Calendario']" />
+
+<div class="grid" style="grid-template-columns:1fr 300px;align-items:start">
+  <lex-panel [noPad]="true">
+    <div class="cal-grid head">@for (d of weekDays; track d) { <div class="wd">{{ d }}</div> }</div>
+    <div class="cal-grid">
+      @for (c of cells(); track $index) {
+        <div class="cell" [class.empty-cell]="!c">
+          @if (c) {
+            <span class="dn">{{ c }}</span>
+            @for (e of eventsOn(c); track e.id) {
+              <div class="cev" [style.borderLeftColor]="e.color"><b>{{ e.time }}</b> {{ e.title }}</div>
+            }
+          }
+        </div>
+      }
+    </div>
+  </lex-panel>
+
+  <lex-panel title="Próximos eventos">
+    @for (e of events(); track e.id) {
+      <div class="up"><span class="up-dot" [style.background]="e.color"></span>
+        <div><div class="up-t">{{ e.title }}</div>
+          <span class="muted" style="font-size:11.5px">{{ e.type }} · {{ e.day }} May · {{ e.time }}</span></div></div>
+    }
+  </lex-panel>
+</div>
+
+<style>
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
+  .cal-grid.head .wd{padding:11px;text-align:center;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;border-bottom:1px solid var(--line)}
+  .cell{min-height:92px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px;font-size:11px}
+  .cell.empty-cell{background:var(--surface-2)}
+  .dn{font-weight:700;color:var(--ink-2);font-size:12px}
+  .cev{margin-top:4px;padding:3px 6px;border-left:3px solid;background:var(--surface-2);border-radius:5px;font-size:10.5px;line-height:1.3}
+  .cev b{display:block;color:var(--ink-soft)}
+  .up{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .up-dot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex:none}
+  .up-t{font-size:13px;font-weight:600}
+</style>

@@ -1,0 +1,39 @@
+<div class="shell" [class.sb-open]="ui.sidebarOpen()">
+  @if (ui.sidebarOpen()) { <div class="scrim" (click)="ui.closeSidebar()"></div> }
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="logo"><lex-icon name="scale" [size]="20" /></span>
+      <div><b>LEGALCASE</b><span>Gestión Legal</span></div>
+    </div>
+    <nav>
+      @for (item of nav(); track item.path) {
+        <a [routerLink]="item.path" routerLinkActive="active" (click)="ui.closeSidebar()">
+          <lex-icon [name]="item.icon" [size]="18" /> {{ item.label }}
+        </a>
+      }
+    </nav>
+    <button class="logout" (click)="logout()"><lex-icon name="logout" [size]="18" /> Cerrar sesión</button>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="hamb" (click)="ui.toggleSidebar()"><lex-icon name="list" [size]="20" /></button>
+      <div class="search"><lex-icon name="search" [size]="16" color="var(--ink-soft)" />
+        <input placeholder="Buscar expedientes, clientes…" /></div>
+      <div class="tb-actions">
+        <button class="tb-ic" (click)="ui.toggleTheme()">
+          <lex-icon [name]="ui.isDark() ? 'sun' : 'moon'" [size]="19" /></button>
+        <button class="tb-ic notif" (click)="notifs.markAllRead()">
+          <lex-icon name="bell" [size]="19" />
+          @if (notifs.unread()) { <span class="badge">{{ notifs.unread() }}</span> }
+        </button>
+        <div class="me">
+          <lex-avatar [name]="auth.user()?.nombre || 'Usuario'" [size]="36" />
+          <div class="me-info"><b>{{ auth.user()?.nombre }}</b><span>{{ roleLabel() }}</span></div>
+        </div>
+      </div>
+    </header>
+    <main class="content"><router-outlet /></main>
+  </div>
+</div>

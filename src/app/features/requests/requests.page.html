@@ -1,0 +1,50 @@
+<lex-page-head title="Solicitudes Legales"
+  sub="Revise y gestione las consultas entrantes de clientes"
+  [crumbs]="['LEGALCASE','Administración','Solicitudes']" />
+
+<lex-panel title="Bandeja de solicitudes" [noPad]="true">
+  <div actions class="seg">
+    @for (f of filters; track f) {
+      <button [class.on]="filter() === f" (click)="setFilter(f)">{{ f }}</button>
+    }
+  </div>
+
+  @if (list().length) {
+    <table class="tbl">
+      <thead><tr><th>ID</th><th>Cliente</th><th>Tipo</th><th>Prioridad</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead>
+      <tbody>
+        @for (r of list(); track r.id) {
+          <tr>
+            <td><span class="case-id">{{ r.id }}</span></td>
+            <td><div class="user-cell"><lex-avatar [name]="r.cliente" [size]="32" />
+              <div><b>{{ r.cliente }}</b><span>{{ r.correo }}</span></div></div></td>
+            <td>{{ r.tipo }}</td>
+            <td><lex-priority-chip [priority]="r.prioridad" /></td>
+            <td class="muted" style="font-size:12.5px">{{ r.date }}</td>
+            <td><lex-chip [label]="r.estado" [kind]="chipKind(r.estado)" /></td>
+            <td>
+              @if (r.estado === 'Pendiente') {
+                <div class="row" style="gap:6px">
+                  <button class="mini ok" (click)="approve(r.id)"><lex-icon name="check" [size]="14" /></button>
+                  <button class="mini no" (click)="reject(r.id)"><lex-icon name="x" [size]="14" /></button>
+                </div>
+              } @else { <span class="muted" style="font-size:12px">—</span> }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  } @else {
+    <div class="empty"><div class="empty-ic"><lex-icon name="inbox" [size]="30" /></div>
+      <h3>Sin solicitudes</h3><p>No hay solicitudes con ese estado.</p></div>
+  }
+</lex-panel>
+
+<style>
+  .seg{display:flex;gap:4px;background:var(--surface-3);padding:4px;border-radius:10px}
+  .seg button{padding:6px 12px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--ink-soft)}
+  .seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow-sm)}
+  .mini{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:var(--surface-3);color:var(--ink-2)}
+  .mini.ok:hover{background:var(--success-soft);color:var(--success)}
+  .mini.no:hover{background:var(--danger-soft);color:var(--danger)}
+</style>

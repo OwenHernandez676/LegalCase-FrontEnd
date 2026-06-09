@@ -1,0 +1,33 @@
+<lex-page-head title="Configuración" sub="Preferencias de la cuenta y la plataforma"
+  [crumbs]="['LEGALCASE','Cuenta','Configuración']" />
+
+<div class="grid" style="grid-template-columns:1fr 1fr;align-items:start">
+  <lex-panel title="Perfil">
+    <div class="row" style="gap:14px;align-items:center;margin-bottom:18px">
+      <lex-avatar [name]="auth.user()?.nombre || 'Usuario'" [size]="56" />
+      <div><b style="font-size:15px">{{ auth.user()?.nombre }}</b>
+        <div class="muted" style="font-size:12.5px">{{ auth.user()?.correo }}</div></div>
+    </div>
+    <div class="field"><label>Nombre completo</label><input class="input" [value]="auth.user()?.nombre" /></div>
+    <div class="field"><label>Correo electrónico</label><input class="input" [value]="auth.user()?.correo" /></div>
+    <button class="btn btn-gold btn-sm" (click)="save()">Guardar cambios</button>
+  </lex-panel>
+
+  <lex-panel title="Preferencias">
+    <div class="pref"><div><b>Tema oscuro</b><span class="muted">Cambia la apariencia de la plataforma</span></div>
+      <button class="switch" [class.on]="ui.isDark()" (click)="ui.toggleTheme()"><span></span></button></div>
+    <div class="pref"><div><b>Notificaciones por correo</b><span class="muted">Reciba alertas de sus casos</span></div>
+      <button class="switch on"><span></span></button></div>
+    <div class="pref"><div><b>Recordatorios de audiencias</b><span class="muted">Aviso 24h antes</span></div>
+      <button class="switch on"><span></span></button></div>
+  </lex-panel>
+</div>
+
+<style>
+  .pref{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--line)}
+  .pref b{font-size:13.5px;display:block}.pref span{font-size:12px}
+  .switch{width:44px;height:25px;border-radius:100px;background:var(--line-strong);position:relative;transition:.2s;flex:none}
+  .switch.on{background:var(--gold)}
+  .switch span{position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;transition:.2s}
+  .switch.on span{left:22px}
+</style>

@@ -1,59 +1,33 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
-import { ApiService } from '../api/api.service';
-import { AuthResponse, AuthUser, BackendRole } from '../api/backend.models';
-import { Role } from '../models/models';
+import { Injectable, inject } from '@angular/core';
+import { Observable, of, delay, tap, throwError } from 'rxjs';
+import { AuthStore } from '../store/auth.store';
+import { AuthSession, LoginCredentials, Role } from '../models';
+import { MOCK_USERS } from './mock-data';
 
-const TOKEN_KEY = 'lexflow_token';
-const USER_KEY = 'lexflow_user';
-
-/** Traduce el rol del backend al rol que entiende la UI. */
-export function toUiRole(rol: BackendRole): Role {
-  if (rol === 'administrador') return 'admin';
-  if (rol === 'cliente') return 'client';
-  return 'lawyer';
-}
-
+/**
+ * Servicio de autenticación.
+ * MODO DEMO: valida contra usuarios de muestra y emite un token simulado.
+ * MODO REAL: descomentar la llamada a ApiService.post('auth/login', creds)
+ * y eliminar la rama mock — el AuthStore y los guards no cambian.
+ */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly api = inject(ApiService);
-  private readonly router = inject(Router);
+  private readonly store = inject(AuthStore);
+  // private readonly api = inject(ApiService); // ← activar al conectar NestJS
 
-  readonly token = signal<string | null>(localStorage.getItem(TOKEN_KEY));
-  readonly user = signal<AuthUser | null>(this.readStoredUser());
+  login(creds: LoginCredentials): Observable<AuthSession> {
+    const user = MOCK_USERS.find((u) => u.rol === creds.rol);
+    if (!user) return throwError(() => new Error('Credenciales inválidas'));
 
-  readonly isAuthenticated = computed(() => !!this.token());
-  readonly role = computed<Role>(() => {
-    const u = this.user();
-    return u ? toUiRole(u.rol) : 'lawyer';
-  });
-
-  login(correo: string, contrasena: string): Observable<AuthResponse> {
-    return this.api.login(correo, contrasena).pipe(
-      tap((res) => {
-        localStorage.setItem(TOKEN_KEY, res.token);
-        localStorage.setItem(USER_KEY, JSON.stringify(res.user));
-        this.token.set(res.token);
-        this.user.set(res.user);
-      }),
-    );
+    const session: AuthSession = { user, token: this.fakeJwt(user.rol) };
+    // return this.api.post<AuthSession>('auth/login', creds).pipe(tap(s => this.store.setSession(s)));
+    return of(session).pipe(delay(450), tap((s) => this.store.setSession(s)));
   }
 
-  logout(): void {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-    this.token.set(null);
-    this.user.set(null);
-    this.router.navigate(['/login']);
-  }
+  logout(): void { this.store.clear(); }
 
-  private readStoredUser(): AuthUser | null {
-    const raw = localStorage.getItem(USER_KEY);
-    try {
-      return raw ? (JSON.parse(raw) as AuthUser) : null;
-    } catch {
-      return null;
-    }
+  private fakeJwt(rol: Role): string {
+    const payload = btoa(JSON.stringify({ rol, iat: Date.now() }));
+    return `demo.${payload}.legalcase`;
   }
 }

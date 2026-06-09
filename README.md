@@ -1,59 +1,114 @@
-# Lexflow
+# LEGALCASE — Frontend (Angular 19)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.12.
+Sistema Web de Gestión de Casos Legales. Plataforma SaaS jurídica con tres roles
+(**Administrador**, **Abogado**, **Cliente**) construida con Angular 19, standalone
+components, Signals y arquitectura modular preparada para conectarse a un backend NestJS.
 
-## Development server
+---
 
-To start a local development server, run:
+## 1. Requisitos
 
-```bash
-ng serve
-```
+- **Node.js 18.19+ o 20+**
+- **npm 9+**
+- (Opcional) Angular CLI global: `npm install -g @angular/cli`
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## 2. Instalación
 
 ```bash
-ng generate component component-name
+npm install
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## 3. Ejecución en desarrollo
 
 ```bash
-ng generate --help
+npm start          # equivale a: ng serve
+# Abrir http://localhost:4200
 ```
 
-## Building
+La app arranca en **modo demo** con datos en memoria, sin necesidad de backend.
+En la pantalla de login, seleccione un rol y las credenciales se completan solas:
 
-To build the project run:
+| Rol           | Correo                  | Contraseña |
+|---------------|-------------------------|------------|
+| Administrador | admin@legalcase.hn       | demo1234   |
+| Abogado       | abogado@legalcase.hn     | demo1234   |
+| Cliente       | cliente@legalcase.hn     | demo1234   |
+
+## 4. Build de producción
 
 ```bash
-ng build
+npm run build      # genera dist/legalcase-frontend
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+---
 
-## Running unit tests
+## 5. Arquitectura
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
+```
+src/app/
+├── core/                 # Núcleo sin UI (singletons, reglas, contratos)
+│   ├── models/           # Interfaces y enums de dominio (tipado estricto)
+│   ├── services/         # AuthService, ApiService y servicios de dominio
+│   ├── store/            # Estado global con Signals (AuthStore, UiStore)
+│   ├── guards/           # authGuard, roleGuard (RBAC)
+│   └── interceptors/     # jwtInterceptor, errorInterceptor
+├── shared/               # Componentes reutilizables y sin estado de negocio
+│   └── components/       # icon, avatar, chip, kpi-card, panel, modal, toast…
+├── layouts/              # Shells: public-layout y app-layout (sidebar + topbar)
+└── features/             # Páginas por dominio (lazy loaded)
+    ├── landing/ auth/ dashboard/ requests/ cases/ kanban/
+    └── calendar/ documents/ users/ tasks/ messages/ reports/ settings/
 ```
 
-## Running end-to-end tests
+**Alias de importación** (definidos en `tsconfig.json`): `@core/*`, `@shared/*`,
+`@layouts/*`, `@features/*`, `@env/*`.
 
-For end-to-end (e2e) testing, run:
+### Flujo de navegación
+- Zona pública (`/`, `/login`) bajo `PublicLayout`.
+- Zona privada (`/app/**`) protegida por `authGuard`, con `AppLayout` (sidebar
+  + topbar dependientes del rol). Cada módulo se carga con **lazy loading**
+  (`loadComponent`) y algunos exigen rol específico vía `roleGuard([...])`.
 
-```bash
-ng e2e
-```
+---
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## 6. Manejo de estado global (Signals)
 
-## Additional Resources
+Se usa el patrón **"store como servicio"**: un servicio `@Injectable` con un
+`signal` privado de escritura y selectores públicos `readonly`/`computed`.
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- `AuthStore` — única fuente de verdad de la sesión: usuario, token y rol.
+- `UiStore` — tema (claro/oscuro) y estado del sidebar.
+- Servicios de dominio (`CasesService`, `RequestsService`, …) exponen sus
+  colecciones como signals y métodos de mutación. Cualquier vista que lea esos
+  selectores se re-renderiza automáticamente: **sin duplicación y siempre en sincronía**.
+
+---
+
+## 7. Cómo conectar el backend NestJS
+
+1. Ajuste la URL en `src/environments/environment.ts` → `apiUrl`.
+2. En `AuthService.login()`: elimine la rama mock (`of(session)`) y descomente
+   la llamada `this.api.post('auth/login', creds)`.
+3. En cada servicio de dominio, reemplace la lectura de `MOCK_*` por llamadas
+   `ApiService.get/post/...`. El `jwtInterceptor` ya adjunta el token a cada
+   petición y el `errorInterceptor` cierra sesión ante un 401.
+4. No es necesario tocar guards, store, layouts ni componentes.
+
+---
+
+## 8. Cómo escalar
+
+- **Nuevo módulo**: cree `features/<modulo>/<modulo>.page.ts` (standalone) y
+  añada una ruta `loadComponent` en `app.routes.ts`. Se carga de forma perezosa.
+- **Nuevo estado de dominio**: cree un servicio-store con signals en `core/services`.
+- **Nuevo componente UI**: agréguelo en `shared/components` y reutilícelo.
+- Para apps muy grandes puede migrarse el patrón de store a NgRx SignalStore sin
+  cambiar la filosofía de selectores.
+
+---
+
+## 9. Tecnologías
+
+Angular 19 · TypeScript estricto · Standalone Components · Signals · Angular Router
+con Lazy Loading · HttpClient + interceptores funcionales · SCSS (design system
+centralizado) · Diseño responsive.

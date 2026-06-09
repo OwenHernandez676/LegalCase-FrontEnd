@@ -1,0 +1,28 @@
+<lex-page-head title="Reportes y Métricas" sub="Indicadores de desempeño del despacho"
+  [crumbs]="['LEGALCASE','Administración','Reportes']" />
+
+<div class="grid kpi-row" style="margin-bottom:18px">
+  <lex-kpi-card icon="folder" label="Casos totales" [value]="svc.total()" delta="+12%" />
+  <lex-kpi-card icon="check" label="Tasa de resolución" value="94%" iconBg="var(--success-soft)" iconColor="var(--success)" delta="+3%" />
+  <lex-kpi-card icon="clock" label="Tiempo promedio" value="38 d" iconBg="var(--blue-soft)" iconColor="var(--blue)" />
+  <lex-kpi-card icon="award" label="Satisfacción" value="4.7/5" iconBg="var(--gold-wash)" iconColor="var(--gold)" delta="+0.2" />
+</div>
+
+<div class="grid" style="grid-template-columns:1fr 1fr">
+  <lex-panel title="Casos por estado">
+    @for (s of byStatus(); track s.label) {
+      <div class="brow"><div class="spread"><span style="font-size:13px;font-weight:600">{{ s.label }}</span>
+        <span class="muted" style="font-size:12px">{{ s.n }} · {{ s.pct }}%</span></div>
+        <div class="prog" style="margin-top:6px"><i [style.width.%]="s.pct" [style.background]="s.color"></i></div></div>
+    }
+  </lex-panel>
+  <lex-panel title="Casos por área de práctica">
+    @for (t of byType(); track t.tipo) {
+      <div class="brow"><div class="spread"><span style="font-size:13px;font-weight:600">{{ t.tipo }}</span>
+        <span class="muted" style="font-size:12px">{{ t.n }}</span></div>
+        <div class="prog" style="margin-top:6px"><i [style.width.%]="t.pct"></i></div></div>
+    }
+  </lex-panel>
+</div>
+
+<style>.brow{padding:9px 0;border-bottom:1px solid var(--line)}</style>

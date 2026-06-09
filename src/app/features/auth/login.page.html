@@ -1,0 +1,35 @@
+<div class="auth">
+  <div class="auth-aside">
+    <a routerLink="/" class="brand"><span class="logo"><lex-icon name="scale" [size]="22" /></span> LEGALCASE</a>
+    <div class="aside-body">
+      <h2>Bienvenido de nuevo</h2>
+      <p>Acceda a la plataforma de gestión legal según su rol en el despacho.</p>
+    </div>
+    <span class="aside-foot muted">Sistema Web de Gestión de Casos Legales</span>
+  </div>
+
+  <div class="auth-form">
+    <div class="form-card">
+      <h1>Iniciar sesión</h1>
+      <p class="muted">Seleccione su rol para continuar</p>
+
+      <div class="roles">
+        @for (r of roles; track r.id) {
+          <button class="role" [class.sel]="selectedRole() === r.id" (click)="select(r.id)">
+            <span class="role-ic"><lex-icon [name]="r.icon" [size]="20" /></span>
+            <div><b>{{ r.label }}</b><span>{{ r.desc }}</span></div>
+          </button>
+        }
+      </div>
+
+      <div class="field"><label>Correo electrónico</label>
+        <input class="input" [(value)]="email" #em (input)="email = em.value" placeholder="usuario@legalcase.hn" /></div>
+      <div class="field"><label>Contraseña</label>
+        <input class="input" type="password" [(value)]="password" #pw (input)="password = pw.value" placeholder="••••••••" /></div>
+
+      <button class="btn btn-gold btn-block" (click)="submit()" [disabled]="loading()">
+        {{ loading() ? 'Ingresando…' : 'Ingresar' }}</button>
+      <p class="hint muted">Demo: seleccione un rol y las credenciales se completan solas.</p>
+    </div>
+  </div>
+</div>

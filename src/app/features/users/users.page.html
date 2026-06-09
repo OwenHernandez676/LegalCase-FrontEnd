@@ -1,0 +1,29 @@
+<lex-page-head title="Abogados y Usuarios" sub="Equipo del despacho y su carga de trabajo"
+  [crumbs]="['LEGALCASE','Administración','Usuarios']">
+  <button class="btn btn-gold btn-sm" (click)="add()"><lex-icon name="plus" [size]="15" /> Nuevo usuario</button>
+</lex-page-head>
+
+<div class="cards">
+  @for (l of lawyers(); track l.id) {
+    <div class="ucard">
+      <div class="row" style="gap:12px;align-items:center;margin-bottom:14px">
+        <lex-avatar [name]="l.nombre" [size]="46" />
+        <div><b>{{ l.nombre }}</b><div class="muted" style="font-size:12px">{{ l.especialidad }}</div></div>
+      </div>
+      <div class="urow"><span class="muted">Casos activos</span><b>{{ l.casos }}</b></div>
+      <div class="urow"><span class="muted">Calificación</span>
+        <b><lex-icon name="award" [size]="13" color="var(--gold)" /> {{ l.calificacion }}</b></div>
+      <div class="urow" style="align-items:center"><span class="muted">Carga</span>
+        <lex-chip [label]="l.cargaTrabajo + '%'" [kind]="loadTone(l.cargaTrabajo!)" /></div>
+      <div class="prog" style="margin-top:8px"><i [style.width.%]="l.cargaTrabajo"></i></div>
+    </div>
+  }
+</div>
+
+<style>
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+  .ucard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm)}
+  .ucard b{font-size:14px}
+  .urow{display:flex;justify-content:space-between;padding:7px 0;font-size:13px;border-bottom:1px solid var(--line)}
+  .urow b{display:flex;align-items:center;gap:4px}
+</style>
