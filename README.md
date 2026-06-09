@@ -1,4 +1,4 @@
-# LEGALCASE — Frontend (Angular 19)
+# LEGALCASE — Frontend (Angular 21.2.14)
 
 Sistema Web de Gestión de Casos Legales. Plataforma SaaS jurídica con tres roles
 (**Administrador**, **Abogado**, **Cliente**) construida con Angular 19, standalone
@@ -25,24 +25,8 @@ npm start          # equivale a: ng serve
 # Abrir http://localhost:4200
 ```
 
-La app arranca en **modo demo** con datos en memoria, sin necesidad de backend.
-En la pantalla de login, seleccione un rol y las credenciales se completan solas:
 
-| Rol           | Correo                  | Contraseña |
-|---------------|-------------------------|------------|
-| Administrador | admin@legalcase.hn       | demo1234   |
-| Abogado       | abogado@legalcase.hn     | demo1234   |
-| Cliente       | cliente@legalcase.hn     | demo1234   |
-
-## 4. Build de producción
-
-```bash
-npm run build      # genera dist/legalcase-frontend
-```
-
----
-
-## 5. Arquitectura
+## 4. Arquitectura
 
 ```
 src/app/
@@ -84,7 +68,7 @@ Se usa el patrón **"store como servicio"**: un servicio `@Injectable` con un
 
 ---
 
-## 7. Cómo conectar el backend NestJS
+## 7. Cómo conectar el backend 
 
 1. Ajuste la URL en `src/environments/environment.ts` → `apiUrl`.
 2. En `AuthService.login()`: elimine la rama mock (`of(session)`) y descomente
@@ -109,6 +93,6 @@ Se usa el patrón **"store como servicio"**: un servicio `@Injectable` con un
 
 ## 9. Tecnologías
 
-Angular 19 · TypeScript estricto · Standalone Components · Signals · Angular Router
+Angular 21.2.14 · TypeScript estricto · Standalone Components · Signals · Angular Router
 con Lazy Loading · HttpClient + interceptores funcionales · SCSS (design system
 centralizado) · Diseño responsive.
