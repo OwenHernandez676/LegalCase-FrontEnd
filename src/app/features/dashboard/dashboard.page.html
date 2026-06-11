@@ -1,22 +1,57 @@
 <!-- ====================== ADMINISTRADOR ====================== -->
 @if (role() === 'administrador') {
   <lex-page-head title="Panel de Administración"
-    sub="Visión general del despacho" [crumbs]="['LEGALCASE','Administración','Dashboard']">
-    <a routerLink="/app/requests" class="btn btn-gold btn-sm"><lex-icon name="inbox" [size]="15" /> Ver solicitudes</a>
-  </lex-page-head>
+    sub="Visión general del despacho" [crumbs]="['LEGALCASE','Administración','Dashboard']" />
 
   <div class="grid kpi-row" style="margin-bottom:18px">
     <lex-kpi-card icon="folder" label="Casos totales" [value]="cases.total()" delta="+12%" />
     <lex-kpi-card icon="inbox" label="Solicitudes pendientes" [value]="requests.pending().length"
       iconBg="var(--violet-soft)" iconColor="var(--violet)" delta="+2 hoy" />
-    <lex-kpi-card icon="users" label="Abogados activos" [value]="catalog.lawyers().length"
+    <lex-kpi-card icon="users" label="Abogados activos" [value]="lawyerLoad().length"
       iconBg="var(--blue-soft)" iconColor="var(--blue)" delta="100%" />
     <lex-kpi-card icon="check" label="Casos finalizados" [value]="cases.finished()"
       iconBg="var(--success-soft)" iconColor="var(--success)" delta="+5%" />
   </div>
 
-  <div class="grid" style="grid-template-columns:1.7fr 1fr">
-    <lex-panel title="Solicitudes recientes" sub="Requieren su revisión" [noPad]="true">
+  <div class="grid" style="grid-template-columns:1.7fr 1fr;margin-bottom:18px">
+    <lex-panel title="Ocupación de abogados" sub="Carga de casos del equipo legal" [noPad]="true">
+      <table class="tbl">
+        <thead><tr><th>Abogado</th><th>Especialidad</th><th>Casos asignados</th></tr></thead>
+        <tbody>
+          @for (l of lawyerLoad(); track l.id) {
+            <tr>
+              <td><div class="user-cell"><lex-avatar [name]="l.nombre" [size]="30" /><b>{{ l.nombre }}</b></div></td>
+              <td class="muted" style="font-size:12.5px">{{ l.especialidad }}</td>
+              <td><b>{{ l.casos }}</b></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </lex-panel>
+
+    <lex-panel title="Casos por prioridad" sub="Distribución actual">
+      <div class="donut-wrap">
+        <svg viewBox="0 0 140 140" class="donut">
+          @for (s of priorityDist(); track s.label) {
+            <circle cx="70" cy="70" [attr.r]="54" fill="none" [attr.stroke]="s.color" stroke-width="16"
+              [attr.stroke-dasharray]="s.dash" [attr.stroke-dashoffset]="s.offset"
+              transform="rotate(-90 70 70)" stroke-linecap="butt" />
+          }
+          <text x="70" y="66" text-anchor="middle" class="donut-num">{{ cases.total() }}</text>
+          <text x="70" y="84" text-anchor="middle" class="donut-lbl">CASOS</text>
+        </svg>
+        <div class="legend">
+          @for (s of priorityDist(); track s.label) {
+            <div class="lg-row"><span class="lg-dot" [style.background]="s.color"></span>
+              <span class="lg-name">{{ s.label }}</span><b>{{ s.value }}</b></div>
+          }
+        </div>
+      </div>
+    </lex-panel>
+  </div>
+
+  <div class="grid">
+    <lex-panel title="Solicitudes recientes" sub="Consultas entrantes de clientes · requieren su revisión" [noPad]="true">
       <a actions routerLink="/app/requests" class="btn btn-soft btn-sm">Ver todas</a>
       <table class="tbl">
         <thead><tr><th>ID</th><th>Cliente</th><th>Tipo</th><th>Prioridad</th><th>Estado</th></tr></thead>
@@ -25,18 +60,10 @@
             <tr><td><span class="case-id">{{ r.id }}</span></td>
               <td><div class="user-cell"><lex-avatar [name]="r.cliente" [size]="30" /><b>{{ r.cliente }}</b></div></td>
               <td>{{ r.tipo }}</td><td><lex-priority-chip [priority]="r.prioridad" /></td>
-              <td><lex-status-chip [status]="$any(r.estado)" /></td></tr>
+              <td><lex-chip [label]="r.estado" [kind]="reqChipKind(r.estado)" /></td></tr>
           }
         </tbody>
       </table>
-    </lex-panel>
-    <lex-panel title="Actividad reciente" sub="Movimientos del sistema">
-      @for (a of activity; track a.id) {
-        <div class="feed">
-          <span class="feed-dot {{ a.color }}"><lex-icon [name]="$any(a.icon)" [size]="14" /></span>
-          <div><p [innerHTML]="renderActivity(a.text)"></p><span class="ft">{{ a.time }}</span></div>
-        </div>
-      }
     </lex-panel>
   </div>
 }
@@ -112,6 +139,14 @@
 }
 
 <style>
+  .donut-wrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .donut{width:140px;height:140px;flex:none}
+  .donut-num{font-family:'Fraunces';font-size:30px;font-weight:600;fill:var(--ink)}
+  .donut-lbl{font-size:9px;font-weight:700;letter-spacing:.12em;fill:var(--ink-soft)}
+  .legend{flex:1;min-width:120px;display:flex;flex-direction:column;gap:8px}
+  .lg-row{display:flex;align-items:center;gap:9px;font-size:13px}
+  .lg-dot{width:10px;height:10px;border-radius:3px;flex:none}
+  .lg-name{flex:1;color:var(--ink-2)}
   .feed{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid var(--line)}
   .feed-dot{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:none}
   .feed p{font-size:13px}.feed .ft{font-size:11px;color:var(--ink-faint)}

@@ -6,12 +6,14 @@ import { IconComponent } from '@shared/components/icon/icon.component';
 import { StatusChipComponent } from '@shared/components/status-chip/status-chip.component';
 import { PriorityChipComponent } from '@shared/components/priority-chip/priority-chip.component';
 import { CasesService } from '@core/services/cases.service';
-import { CaseStatus } from '@core/models';
+import { CaseStatus, LegalCase } from '@core/models';
+import { CaseDetailModalComponent } from './components/case-detail-modal/case-detail-modal.component';
 
 @Component({
   selector: 'lex-cases',
   standalone: true,
-  imports: [PageHeadComponent, PanelComponent, AvatarComponent, IconComponent, StatusChipComponent, PriorityChipComponent],
+  imports: [PageHeadComponent, PanelComponent, AvatarComponent, IconComponent, StatusChipComponent,
+            PriorityChipComponent, CaseDetailModalComponent],
   templateUrl: './cases.page.html',
 })
 export class CasesPage {
@@ -19,6 +21,7 @@ export class CasesPage {
   readonly statuses: (CaseStatus | 'Todos')[] = ['Todos', 'Pendiente', 'En proceso', 'En revisión', 'Finalizado'];
   readonly status = signal<CaseStatus | 'Todos'>('Todos');
   readonly query = signal('');
+  readonly selected = signal<LegalCase | null>(null);
 
   readonly list = computed(() => {
     const q = this.query().toLowerCase();
@@ -30,4 +33,6 @@ export class CasesPage {
 
   setStatus(s: CaseStatus | 'Todos'): void { this.status.set(s); }
   onSearch(v: string): void { this.query.set(v); }
+  openCase(c: LegalCase): void { this.selected.set(c); }
+  closeCase(): void { this.selected.set(null); }
 }

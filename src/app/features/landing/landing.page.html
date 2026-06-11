@@ -12,7 +12,7 @@
     <p>LEGALCASE centraliza solicitudes, expedientes, agenda y comunicación
        para despachos, abogados y clientes en una sola plataforma moderna.</p>
     <div class="hero-cta">
-      <a routerLink="/login" class="btn btn-gold">Solicitar consulta legal <lex-icon name="arrow" [size]="16" /></a>
+      <button type="button" class="btn btn-gold" (click)="openRequestModal()">Solicitar consulta legal <lex-icon name="arrow" [size]="16" /></button>
       <a routerLink="/login" class="btn btn-ghost ghost-light">Ingresar a la plataforma</a>
     </div>
     <div class="stats">
@@ -44,4 +44,8 @@
     <span>LEGALCASE · Sistema Web de Gestión de Casos Legales</span>
     <span class="muted">© 2026 · Desarrollo de Aplicaciones de Vanguardia</span>
   </footer>
+
+  @if (showRequestModal) {
+    <app-request-modal (close)="closeRequestModal()" />
+  }
 </div>
