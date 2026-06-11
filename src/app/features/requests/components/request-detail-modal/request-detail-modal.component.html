@@ -1,0 +1,22 @@
+<lex-modal [title]="'Solicitud ' + request.id" [sub]="request.cliente" (close)="close.emit()">
+  <div class="drow"><span class="muted">Nombre del cliente</span><b>{{ request.cliente }}</b></div>
+  <div class="drow"><span class="muted">Correo electrónico</span><b>{{ request.correo }}</b></div>
+  <div class="drow"><span class="muted">Teléfono</span><b>{{ request.telefono }}</b></div>
+  <div class="drow"><span class="muted">Tipo de caso</span><b>{{ request.tipo }}</b></div>
+  <div class="drow" style="align-items:center"><span class="muted">Prioridad</span>
+    <lex-priority-chip [priority]="request.prioridad" /></div>
+  <div class="drow" style="align-items:center"><span class="muted">Estado</span>
+    <lex-chip [label]="request.estado" [kind]="estadoKind(request.estado)" /></div>
+  <div class="ddesc">
+    <span class="muted">Descripción</span>
+    <p>{{ request.descripcion }}</p>
+  </div>
+
+  <style>
+    .drow{display:flex;justify-content:space-between;gap:16px;padding:10px 0;font-size:13px;border-bottom:1px solid var(--line)}
+    .drow b{text-align:right}
+    .ddesc{padding-top:12px}
+    .ddesc .muted{font-size:13px}
+    .ddesc p{margin-top:6px;font-size:13px;line-height:1.55;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  </style>
+</lex-modal>

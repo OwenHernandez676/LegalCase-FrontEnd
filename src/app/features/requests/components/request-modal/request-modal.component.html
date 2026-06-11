@@ -1,0 +1,61 @@
+<lex-modal
+  title="Solicitar consulta legal"
+  [sub]="'Paso ' + step + ' de ' + totalSteps"
+  (close)="close.emit()">
+
+  <div class="steps">
+    <span class="step-dot" [class.active]="step >= 1">1</span>
+    <span class="step-line" [class.active]="step >= 2"></span>
+    <span class="step-dot" [class.active]="step >= 2">2</span>
+  </div>
+
+  <form id="request-form" [formGroup]="form" (ngSubmit)="submit()">
+    @if (step === 1) {
+      <div class="field">
+        <label>Nombre completo <span class="req">*</span></label>
+        <input class="input" type="text" formControlName="cliente" placeholder="Ej. María Fernández" />
+      </div>
+      <div class="field">
+        <label>Correo electrónico <span class="req">*</span></label>
+        <input class="input" type="email" formControlName="correo" placeholder="correo@ejemplo.com" />
+      </div>
+      <div class="field">
+        <label>Teléfono <span class="req">*</span></label>
+        <input class="input" type="tel" formControlName="telefono" placeholder="+504 0000-0000" />
+      </div>
+    } @else {
+      <div class="field-row">
+        <div class="field">
+          <label>Tipo de caso <span class="req">*</span></label>
+          <select class="select" formControlName="tipo">
+            @for (t of caseTypes; track t) {
+              <option [value]="t">{{ t }}</option>
+            }
+          </select>
+        </div>
+        <div class="field">
+          <label>Prioridad <span class="req">*</span></label>
+          <select class="select" formControlName="prioridad">
+            @for (p of priorities; track p) {
+              <option [value]="p">{{ p }}</option>
+            }
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Descripción <span class="req">*</span></label>
+        <textarea class="textarea" rows="4" formControlName="descripcion" placeholder="Describa brevemente su situación legal"></textarea>
+      </div>
+    }
+  </form>
+
+  <div footer class="m-foot">
+    @if (step === 1) {
+      <button class="btn btn-ghost" type="button" (click)="close.emit()">Cancelar</button>
+      <button class="btn btn-gold" type="button" (click)="nextStep()">Continuar</button>
+    } @else {
+      <button class="btn btn-ghost" type="button" (click)="previousStep()">Atrás</button>
+      <button class="btn btn-gold" type="button" (click)="submit()">Enviar solicitud</button>
+    }
+  </div>
+</lex-modal>

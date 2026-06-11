@@ -15,11 +15,11 @@ export const MOCK_USERS: User[] = [
 ];
 
 export const MOCK_LAWYERS: User[] = [
-  { id: 'l1', nombre: 'Mariela Fonseca', correo: 'm.fonseca@legalcase.hn', rol: 'abogado', especialidad: 'Mercantil', cargaTrabajo: 66, calificacion: 4.8, casos: 14, activo: true },
-  { id: 'l2', nombre: 'Rodrigo Castellanos', correo: 'r.castellanos@legalcase.hn', rol: 'abogado', especialidad: 'Laboral', cargaTrabajo: 81, calificacion: 4.7, casos: 11, activo: true },
-  { id: 'l3', nombre: 'Lucía Bográn', correo: 'l.bogran@legalcase.hn', rol: 'abogado', especialidad: 'Civil', cargaTrabajo: 54, calificacion: 4.6, casos: 9, activo: true },
-  { id: 'l4', nombre: 'Diego Maradiaga', correo: 'd.maradiaga@legalcase.hn', rol: 'abogado', especialidad: 'Penal', cargaTrabajo: 88, calificacion: 4.9, casos: 16, activo: true },
-  { id: 'l5', nombre: 'Ana Zelaya', correo: 'a.zelaya@legalcase.hn', rol: 'abogado', especialidad: 'Familia', cargaTrabajo: 47, calificacion: 4.5, casos: 8, activo: true },
+  { id: 'l1', nombre: 'Mariela Fonseca', correo: 'm.fonseca@legalcase.hn', telefono: '+504 2234-0001', rol: 'abogado', especialidad: 'Derecho Mercantil', cargaTrabajo: 66, calificacion: 4.8, casos: 14, activo: true },
+  { id: 'l2', nombre: 'Rodrigo Castellanos', correo: 'r.castellanos@legalcase.hn', telefono: '+504 2234-0002', rol: 'abogado', especialidad: 'Derecho Laboral', cargaTrabajo: 81, calificacion: 4.7, casos: 11, activo: true },
+  { id: 'l3', nombre: 'Lucía Bográn', correo: 'l.bogran@legalcase.hn', telefono: '+504 2234-0003', rol: 'abogado', especialidad: 'Derecho de Familia', cargaTrabajo: 54, calificacion: 4.6, casos: 9, activo: true },
+  { id: 'l4', nombre: 'Diego Maradiaga', correo: 'd.maradiaga@legalcase.hn', telefono: '+504 2234-0004', rol: 'abogado', especialidad: 'Derecho Penal', cargaTrabajo: 88, calificacion: 4.9, casos: 16, activo: true },
+  { id: 'l5', nombre: 'Ana Zelaya', correo: 'a.zelaya@legalcase.hn', telefono: '+504 2234-0005', rol: 'abogado', especialidad: 'Derecho Civil', cargaTrabajo: 47, calificacion: 4.5, casos: 8, activo: true },
 ];
 
 export const MOCK_REQUESTS: LegalRequest[] = [

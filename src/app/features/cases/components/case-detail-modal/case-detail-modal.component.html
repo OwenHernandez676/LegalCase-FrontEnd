@@ -1,0 +1,72 @@
+<lex-modal [title]="case.titulo" [sub]="case.id + ' · ' + case.cliente" [lg]="true" (close)="close.emit()">
+
+  <div class="cd-head">
+    <div class="cd-meta"><span class="muted">Cliente</span><b>{{ case.cliente }}</b></div>
+    <div class="cd-meta"><span class="muted">Abogado</span><b>{{ case.abogado }}</b></div>
+    <div class="cd-meta"><span class="muted">Apertura</span><b>{{ case.opened }}</b></div>
+    <div class="cd-meta"><span class="muted">Vencimiento</span><b>{{ case.due }}</b></div>
+    <div class="cd-chips">
+      <lex-status-chip [status]="case.estado" />
+      <lex-priority-chip [priority]="case.prioridad" />
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button [class.on]="tab() === 'timeline'" (click)="setTab('timeline')">Línea de tiempo</button>
+    <button [class.on]="tab() === 'docs'" (click)="setTab('docs')">Documentos</button>
+  </div>
+
+  @if (tab() === 'timeline') {
+    <div class="tl">
+      @for (e of timeline(); track e.title; let last = $last) {
+        <div class="tl-item" [class.last]="last">
+          <span class="tl-dot" [style.background]="e.color"><lex-icon [name]="e.icon" [size]="13" color="#fff" /></span>
+          <div class="tl-body">
+            <b>{{ e.title }}</b>
+            <span class="tl-time">{{ e.time }}</span>
+            <p>{{ e.desc }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    @if (documents().length) {
+      <div class="doc-list">
+        @for (d of documents(); track d.id) {
+          <div class="doc">
+            <span class="doc-ic"><lex-icon name="doc" [size]="16" /></span>
+            <div class="doc-info"><b>{{ d.name }}</b><span class="muted">{{ d.size }} · {{ d.by }} · {{ d.date }}</span></div>
+            <span class="doc-ext">{{ d.ext }}</span>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="empty"><div class="empty-ic"><lex-icon name="doc" [size]="28" /></div>
+        <h3>Sin documentos</h3><p>Este expediente aún no tiene documentos.</p></div>
+    }
+  }
+
+  <style>
+    .cd-head{display:flex;flex-wrap:wrap;gap:18px;align-items:center;padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:4px}
+    .cd-meta{display:flex;flex-direction:column;gap:2px;font-size:13px}
+    .cd-meta .muted{font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+    .cd-chips{display:flex;gap:8px;margin-left:auto}
+    .tabs{display:flex;gap:4px;background:var(--surface-3);padding:4px;border-radius:10px;margin:16px 0 18px}
+    .tabs button{flex:1;padding:8px 12px;border-radius:7px;font-size:13px;font-weight:600;color:var(--ink-soft)}
+    .tabs button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow-sm)}
+    .tl-item{display:flex;gap:13px;position:relative;padding-bottom:18px}
+    .tl-item:not(.last)::before{content:'';position:absolute;left:15px;top:30px;bottom:0;width:2px;background:var(--line)}
+    .tl-dot{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:none;z-index:1}
+    .tl-body{display:flex;flex-direction:column;gap:1px}
+    .tl-body b{font-size:13.5px}
+    .tl-time{font-size:11px;color:var(--ink-faint);font-weight:600}
+    .tl-body p{font-size:12.5px;color:var(--ink-soft);margin-top:3px}
+    .doc-list{display:flex;flex-direction:column;gap:9px}
+    .doc{display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid var(--line);border-radius:11px;background:var(--surface)}
+    .doc-ic{width:36px;height:36px;border-radius:9px;background:var(--gold-wash);color:var(--gold);display:grid;place-items:center;flex:none}
+    .doc-info{display:flex;flex-direction:column;flex:1;min-width:0}
+    .doc-info b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .doc-info .muted{font-size:11.5px}
+    .doc-ext{font-size:10.5px;font-weight:700;color:var(--ink-soft);background:var(--surface-3);padding:3px 8px;border-radius:6px}
+  </style>
+</lex-modal>

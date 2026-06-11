@@ -2,6 +2,16 @@
   sub="Revise y gestione las consultas entrantes de clientes"
   [crumbs]="['LEGALCASE','Administración','Solicitudes']" />
 
+<div class="grid kpi-row" style="margin-bottom:18px">
+  <lex-kpi-card icon="inbox" label="Total solicitudes" [value]="total()" />
+  <lex-kpi-card icon="clock" label="Pendientes" [value]="pendientes()"
+    iconBg="var(--violet-soft)" iconColor="var(--violet)" />
+  <lex-kpi-card icon="check" label="Aprobadas" [value]="aprobadas()"
+    iconBg="var(--success-soft)" iconColor="var(--success)" />
+  <lex-kpi-card icon="x" label="Rechazadas" [value]="rechazadas()"
+    iconBg="var(--danger-soft)" iconColor="var(--danger)" />
+</div>
+
 <lex-panel title="Bandeja de solicitudes" [noPad]="true">
   <div actions class="seg">
     @for (f of filters; track f) {
@@ -11,24 +21,26 @@
 
   @if (list().length) {
     <table class="tbl">
-      <thead><tr><th>ID</th><th>Cliente</th><th>Tipo</th><th>Prioridad</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead>
+      <thead><tr><th>ID</th><th>Cliente</th><th>Contacto</th><th>Tipo</th><th>Prioridad</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead>
       <tbody>
         @for (r of list(); track r.id) {
           <tr>
             <td><span class="case-id">{{ r.id }}</span></td>
             <td><div class="user-cell"><lex-avatar [name]="r.cliente" [size]="32" />
-              <div><b>{{ r.cliente }}</b><span>{{ r.correo }}</span></div></div></td>
+              <b>{{ r.cliente }}</b></div></td>
+            <td><div class="contact"><span>{{ r.correo }}</span><span class="muted">{{ r.telefono }}</span></div></td>
             <td>{{ r.tipo }}</td>
             <td><lex-priority-chip [priority]="r.prioridad" /></td>
             <td class="muted" style="font-size:12.5px">{{ r.date }}</td>
             <td><lex-chip [label]="r.estado" [kind]="chipKind(r.estado)" /></td>
             <td>
-              @if (r.estado === 'Pendiente') {
-                <div class="row" style="gap:6px">
-                  <button class="mini ok" (click)="approve(r.id)"><lex-icon name="check" [size]="14" /></button>
-                  <button class="mini no" (click)="reject(r.id)"><lex-icon name="x" [size]="14" /></button>
-                </div>
-              } @else { <span class="muted" style="font-size:12px">—</span> }
+              <div class="row" style="gap:6px">
+                @if (r.estado === 'Pendiente') {
+                  <button class="mini ok" title="Aprobar" (click)="openApprove(r)"><lex-icon name="check" [size]="14" /></button>
+                  <button class="mini no" title="Rechazar" (click)="reject(r.id)"><lex-icon name="x" [size]="14" /></button>
+                }
+                <button class="mini" title="Ver detalle" (click)="openDetail(r)"><lex-icon name="eye" [size]="14" /></button>
+              </div>
             </td>
           </tr>
         }
@@ -40,11 +52,21 @@
   }
 </lex-panel>
 
+@if (viewing(); as r) {
+  <app-request-detail-modal [request]="r" (close)="closeDetail()" />
+}
+@if (approving(); as r) {
+  <app-assign-lawyer-modal [request]="r" (close)="closeApprove()" (create)="onCreateExpediente($event)" />
+}
+
 <style>
   .seg{display:flex;gap:4px;background:var(--surface-3);padding:4px;border-radius:10px}
   .seg button{padding:6px 12px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--ink-soft)}
   .seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow-sm)}
+  .contact{display:flex;flex-direction:column;font-size:12.5px}
+  .contact .muted{font-size:11.5px}
   .mini{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:var(--surface-3);color:var(--ink-2)}
+  .mini:hover{background:var(--line)}
   .mini.ok:hover{background:var(--success-soft);color:var(--success)}
   .mini.no:hover{background:var(--danger-soft);color:var(--danger)}
 </style>

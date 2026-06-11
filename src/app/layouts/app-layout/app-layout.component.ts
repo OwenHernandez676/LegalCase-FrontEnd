@@ -14,14 +14,14 @@ const NAV: NavItem[] = [
   { label: 'Dashboard', icon: 'dashboard', path: 'dashboard', roles: ['administrador', 'abogado', 'cliente'] },
   { label: 'Solicitudes', icon: 'inbox', path: 'requests', roles: ['administrador'] },
   { label: 'Expedientes', icon: 'folder', path: 'cases', roles: ['administrador', 'abogado'] },
-  { label: 'Tablero Kanban', icon: 'layers', path: 'kanban', roles: ['administrador', 'abogado'] },
-  { label: 'Calendario', icon: 'cal', path: 'calendar', roles: ['administrador', 'abogado', 'cliente'] },
-  { label: 'Documentos', icon: 'doc', path: 'documents', roles: ['administrador', 'abogado', 'cliente'] },
+  { label: 'Tablero Kanban', icon: 'layers', path: 'kanban', roles: ['abogado'] },
+  { label: 'Calendario', icon: 'cal', path: 'calendar', roles: ['abogado', 'cliente'] },
+  { label: 'Documentos', icon: 'doc', path: 'documents', roles: ['abogado', 'cliente'] },
   { label: 'Tareas', icon: 'list', path: 'tasks', roles: ['abogado'] },
-  { label: 'Abogados y Usuarios', icon: 'users', path: 'users', roles: ['administrador'] },
-  { label: 'Mensajes', icon: 'msg', path: 'messages', roles: ['administrador', 'abogado', 'cliente'] },
-  { label: 'Reportes', icon: 'chart', path: 'reports', roles: ['administrador'] },
-  { label: 'Configuración', icon: 'settings', path: 'settings', roles: ['administrador', 'abogado', 'cliente'] },
+  { label: 'Abogados', icon: 'users', path: 'users', roles: ['administrador'] },
+  { label: 'Mensajes', icon: 'msg', path: 'messages', roles: ['abogado', 'cliente'] },
+  { label: 'Reportes', icon: 'chart', path: 'reports', roles: [] },
+  { label: 'Configuración', icon: 'settings', path: 'settings', roles: ['abogado', 'cliente'] },
 ];
 
 @Component({

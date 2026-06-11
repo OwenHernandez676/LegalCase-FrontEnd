@@ -17,5 +17,5 @@ const MAP: Record<CaseStatus, { kind: any; dot: string }> = {
 })
 export class StatusChipComponent {
   readonly status = input.required<CaseStatus>();
-  readonly meta = computed(() => MAP[this.status()]);
+  readonly meta = computed(() => MAP[this.status()] ?? { kind: 'c-gray', dot: '#9AA3B0' });
 }

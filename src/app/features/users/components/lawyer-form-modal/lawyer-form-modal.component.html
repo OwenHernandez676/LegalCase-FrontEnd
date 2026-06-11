@@ -1,0 +1,44 @@
+<lex-modal
+  [title]="isEdit ? 'Editar abogado' : 'Nuevo abogado'"
+  [sub]="isEdit ? (lawyer?.nombre || '') : 'Registre un nuevo integrante del equipo legal'"
+  (close)="close.emit()">
+
+  <form [formGroup]="form">
+    <div class="field">
+      <label>Nombre completo <span class="req">*</span></label>
+      <input class="input" type="text" formControlName="nombre" placeholder="Ej. Dra. Mariela Fonseca" />
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Correo electrónico <span class="req">*</span></label>
+        <input class="input" type="email" formControlName="correo" placeholder="correo@legalcase.hn" />
+      </div>
+      <div class="field">
+        <label>Teléfono <span class="req">*</span></label>
+        <input class="input" type="tel" formControlName="telefono" placeholder="+504 0000-0000" />
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Especialidad <span class="req">*</span></label>
+        <select class="select" formControlName="especialidad">
+          @for (s of specialties; track s) {
+            <option [value]="s">{{ s }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label>Estado <span class="req">*</span></label>
+        <select class="select" [formControl]="form.controls.activo">
+          <option [ngValue]="true">Activo</option>
+          <option [ngValue]="false">Inactivo</option>
+        </select>
+      </div>
+    </div>
+  </form>
+
+  <div footer class="m-foot">
+    <button class="btn btn-ghost" type="button" (click)="close.emit()">Cancelar</button>
+    <button class="btn btn-gold" type="button" (click)="submit()">Guardar abogado</button>
+  </div>
+</lex-modal>

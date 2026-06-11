@@ -1,29 +1,59 @@
-<lex-page-head title="Abogados y Usuarios" sub="Equipo del despacho y su carga de trabajo"
-  [crumbs]="['LEGALCASE','Administración','Usuarios']">
-  <button class="btn btn-gold btn-sm" (click)="add()"><lex-icon name="plus" [size]="15" /> Nuevo usuario</button>
+<lex-page-head title="Abogados" sub="Gestione el equipo legal del despacho"
+  [crumbs]="['LEGALCASE','Administración','Abogados']">
+  <button class="btn btn-gold btn-sm" (click)="openNew()"><lex-icon name="plus" [size]="15" /> Nuevo abogado</button>
 </lex-page-head>
 
 <div class="cards">
   @for (l of lawyers(); track l.id) {
-    <div class="ucard">
+    <div class="ucard" [class.off]="!l.activo">
       <div class="row" style="gap:12px;align-items:center;margin-bottom:14px">
         <lex-avatar [name]="l.nombre" [size]="46" />
-        <div><b>{{ l.nombre }}</b><div class="muted" style="font-size:12px">{{ l.especialidad }}</div></div>
+        <div style="flex:1;min-width:0">
+          <b>{{ l.nombre }}</b>
+          <div class="muted" style="font-size:12px">{{ l.especialidad }}</div>
+        </div>
+        <lex-chip [label]="l.activo ? 'Activo' : 'Inactivo'" [kind]="l.activo ? 'c-green' : 'c-gray'" />
       </div>
+
       <div class="urow"><span class="muted">Casos activos</span><b>{{ l.casos }}</b></div>
-      <div class="urow"><span class="muted">Calificación</span>
-        <b><lex-icon name="award" [size]="13" color="var(--gold)" /> {{ l.calificacion }}</b></div>
-      <div class="urow" style="align-items:center"><span class="muted">Carga</span>
-        <lex-chip [label]="l.cargaTrabajo + '%'" [kind]="loadTone(l.cargaTrabajo!)" /></div>
-      <div class="prog" style="margin-top:8px"><i [style.width.%]="l.cargaTrabajo"></i></div>
+
+      <div class="acts">
+        <button class="btn btn-soft btn-sm" (click)="openView(l)"><lex-icon name="eye" [size]="14" /> Ver</button>
+        <button class="btn btn-soft btn-sm" (click)="openEdit(l)"><lex-icon name="doc" [size]="14" /> Editar</button>
+        @if (l.activo) {
+          <button class="btn btn-ghost btn-sm act-wide" (click)="toggleActive(l)"><lex-icon name="x" [size]="14" /> Inhabilitar</button>
+        } @else {
+          <button class="btn btn-ghost btn-sm act-wide" (click)="toggleActive(l)"><lex-icon name="check" [size]="14" /> Rehabilitar</button>
+        }
+      </div>
     </div>
   }
 </div>
 
+@if (showForm()) {
+  <app-lawyer-form-modal [lawyer]="editing()" (close)="closeForm()" (save)="onSave($event)" />
+}
+
+@if (viewing(); as v) {
+  <lex-modal [title]="v.nombre" [sub]="v.especialidad || ''" (close)="closeView()">
+    <div class="vrow"><span class="muted">Correo</span><b>{{ v.correo }}</b></div>
+    <div class="vrow"><span class="muted">Teléfono</span><b>{{ v.telefono || '—' }}</b></div>
+    <div class="vrow"><span class="muted">Especialidad</span><b>{{ v.especialidad }}</b></div>
+    <div class="vrow"><span class="muted">Casos activos</span><b>{{ v.casos }}</b></div>
+    <div class="vrow" style="align-items:center"><span class="muted">Estado</span>
+      <lex-chip [label]="v.activo ? 'Activo' : 'Inactivo'" [kind]="v.activo ? 'c-green' : 'c-gray'" /></div>
+  </lex-modal>
+}
+
 <style>
   .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
   .ucard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm)}
+  .ucard.off{opacity:.62}
   .ucard b{font-size:14px}
   .urow{display:flex;justify-content:space-between;padding:7px 0;font-size:13px;border-bottom:1px solid var(--line)}
   .urow b{display:flex;align-items:center;gap:4px}
+  .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+  .acts .btn{justify-content:center}
+  .acts .act-wide{grid-column:1 / -1}
+  .vrow{display:flex;justify-content:space-between;padding:9px 0;font-size:13px;border-bottom:1px solid var(--line)}
 </style>

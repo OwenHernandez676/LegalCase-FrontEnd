@@ -1,0 +1,11 @@
+.steps { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 22px; }
+.step-dot {
+  width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 13px; font-weight: 700; background: var(--surface-3); color: var(--ink-soft);
+  border: 1px solid var(--line); transition: all .2s;
+}
+.step-dot.active { background: linear-gradient(135deg, var(--gold-bright), var(--gold)); color: #1A1304; border-color: transparent; }
+.step-line { width: 56px; height: 2px; background: var(--line); transition: background .2s; }
+.step-line.active { background: var(--gold); }
+
+.m-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 22px; border-top: 1px solid var(--line); }
