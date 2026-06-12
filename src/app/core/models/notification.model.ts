@@ -6,4 +6,6 @@ export interface AppNotification {
   time: string;
   leida: boolean;
   icon: string;
+  /** Ruta a la que navega la campana al hacer clic en la notificación. */
+  route?: string;
 }

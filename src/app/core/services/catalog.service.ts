@@ -1,6 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { CalendarEvent, LegalDocument, User } from '../models';
-import { MOCK_DOCS, MOCK_EVENTS, MOCK_LAWYERS } from './mock-data';
+import { LegalDocument, User } from '../models';
+import { MOCK_DOCS, MOCK_LAWYERS } from './mock-data';
 
 /** Datos que recibe el formulario de alta/edición de abogados. */
 export interface LawyerInput {
@@ -11,11 +11,21 @@ export interface LawyerInput {
   activo: boolean;
 }
 
-/** Catálogos de apoyo (documentos, eventos, abogados) expuestos como signals. */
+/** Catálogos de apoyo (documentos, abogados) expuestos como signals. */
 @Injectable({ providedIn: 'root' })
 export class CatalogService {
-  readonly documents = signal<LegalDocument[]>(MOCK_DOCS).asReadonly();
-  readonly events = signal<CalendarEvent[]>(MOCK_EVENTS).asReadonly();
+  private seq = 0;
+  private readonly _documents = signal<LegalDocument[]>(MOCK_DOCS);
+  readonly documents = this._documents.asReadonly();
+
+  addDocument(doc: Omit<LegalDocument, 'id' | 'date'>): void {
+    const item: LegalDocument = {
+      ...doc,
+      id: 'd-' + Date.now() + '-' + ++this.seq,
+      date: new Date().toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' }),
+    };
+    this._documents.update((list) => [item, ...list]);
+  }
 
   private readonly _lawyers = signal<User[]>(MOCK_LAWYERS);
   readonly lawyers = this._lawyers.asReadonly();

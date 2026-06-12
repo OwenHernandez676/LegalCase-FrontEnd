@@ -72,7 +72,7 @@
 @if (role() === 'abogado') {
   <lex-page-head title="Buenos días, {{ auth.user()?.nombre }}"
     sub="Tiene 3 audiencias esta semana y 5 tareas pendientes" [crumbs]="['LEGALCASE','Mi Espacio','Dashboard']">
-    <a routerLink="/app/kanban" class="btn btn-gold btn-sm"><lex-icon name="layers" [size]="15" /> Tablero de casos</a>
+    <a routerLink="/app/cases" class="btn btn-gold btn-sm"><lex-icon name="folder" [size]="15" /> Mis expedientes</a>
   </lex-page-head>
 
   <div class="grid kpi-row" style="margin-bottom:18px">
@@ -118,7 +118,9 @@
         <span class="case-id" style="color:var(--gold-bright)">{{ clientCase().id }}</span>
         <lex-status-chip [status]="clientCase().estado" /></div>
         <h2>{{ clientCase().titulo }}</h2>
-        <p>Abierto el {{ clientCase().opened }} · Vence el {{ clientCase().due }}</p></div>
+        <p>Abierto el {{ clientCase().opened }} · Vence el {{ clientCase().due }}</p>
+        <button class="btn btn-gold btn-sm" style="margin-top:14px" (click)="openClientCase()">
+          <lex-icon name="eye" [size]="14" /> Ver expediente completo</button></div>
       <div style="text-align:right"><div class="hero-lbl">Progreso</div>
         <div class="hero-pct">{{ clientCase().progreso }}%</div></div>
     </div>
@@ -126,16 +128,30 @@
 
   <div class="grid kpi-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
     <lex-kpi-card icon="doc" label="Documentos" [value]="clientCase().docs" />
-    <lex-kpi-card icon="cal" label="Próximo evento" value="Mañana" iconBg="var(--blue-soft)" iconColor="var(--blue)" />
+    <lex-kpi-card icon="cal" label="Eventos del caso" [value]="clientEvents().length" iconBg="var(--blue-soft)" iconColor="var(--blue)" />
     <lex-kpi-card icon="msg" label="Mensajes nuevos" value="1" iconBg="var(--success-soft)" iconColor="var(--success)" />
   </div>
 
-  <lex-panel title="Su abogado asignado">
-    <div class="row" style="gap:13px;align-items:center">
-      <lex-avatar [name]="clientCase().abogado" [size]="48" />
-      <div><b>{{ clientCase().abogado }}</b><div class="muted" style="font-size:12.5px">{{ clientCase().tipo }}</div></div>
-    </div>
-  </lex-panel>
+  <div class="grid" style="grid-template-columns:1fr 1fr">
+    <lex-panel title="Su abogado asignado">
+      <div class="row" style="gap:13px;align-items:center">
+        <lex-avatar [name]="clientCase().abogado" [size]="48" />
+        <div><b>{{ clientCase().abogado }}</b><div class="muted" style="font-size:12.5px">{{ clientCase().tipo }}</div></div>
+      </div>
+    </lex-panel>
+    <lex-panel title="Próximos eventos" sub="Agenda de su caso">
+      @for (e of clientEvents(); track e.id) {
+        <div class="ev"><div class="ev-day" [style.color]="e.color">{{ e.day }}</div>
+          <div><div class="ev-t">{{ e.title }}</div><span class="ft">{{ e.type }} · {{ e.time }}</span></div></div>
+      } @empty {
+        <p class="muted" style="font-size:13px">No hay eventos programados para su caso.</p>
+      }
+    </lex-panel>
+  </div>
+
+  @if (viewingCase(); as c) {
+    <app-case-detail-modal [case]="c" [editable]="false" (close)="closeClientCase()" />
+  }
 }
 
 <style>

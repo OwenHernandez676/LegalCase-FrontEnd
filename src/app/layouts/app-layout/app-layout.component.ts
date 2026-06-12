@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { AvatarComponent } from '@shared/components/avatar/avatar.component';
@@ -6,7 +6,7 @@ import { AuthStore } from '@core/store/auth.store';
 import { UiStore } from '@core/store/ui.store';
 import { AuthService } from '@core/services/auth.service';
 import { NotificationService } from '@core/services/notification.service';
-import { Role } from '@core/models';
+import { AppNotification, NotificationType, Role } from '@core/models';
 
 interface NavItem { label: string; icon: any; path: string; roles: Role[]; }
 
@@ -14,15 +14,22 @@ const NAV: NavItem[] = [
   { label: 'Dashboard', icon: 'dashboard', path: 'dashboard', roles: ['administrador', 'abogado', 'cliente'] },
   { label: 'Solicitudes', icon: 'inbox', path: 'requests', roles: ['administrador'] },
   { label: 'Expedientes', icon: 'folder', path: 'cases', roles: ['administrador', 'abogado'] },
-  { label: 'Tablero Kanban', icon: 'layers', path: 'kanban', roles: ['abogado'] },
   { label: 'Calendario', icon: 'cal', path: 'calendar', roles: ['abogado', 'cliente'] },
-  { label: 'Documentos', icon: 'doc', path: 'documents', roles: ['abogado', 'cliente'] },
-  { label: 'Tareas', icon: 'list', path: 'tasks', roles: ['abogado'] },
   { label: 'Abogados', icon: 'users', path: 'users', roles: ['administrador'] },
   { label: 'Mensajes', icon: 'msg', path: 'messages', roles: ['abogado', 'cliente'] },
-  { label: 'Reportes', icon: 'chart', path: 'reports', roles: [] },
-  { label: 'Configuración', icon: 'settings', path: 'settings', roles: ['abogado', 'cliente'] },
+  { label: 'Configuración', icon: 'settings', path: 'settings', roles: ['cliente'] },
 ];
+
+/** Ruta de respaldo por tipo cuando la notificación no trae ruta propia. */
+const NOTIF_ROUTE: Record<NotificationType, string> = {
+  comentario: '/app/cases',
+  audiencia: '/app/calendar',
+  documento: '/app/cases',
+  estado: '/app/cases',
+  solicitud: '/app/requests',
+  mensaje: '/app/messages',
+  evento: '/app/calendar',
+};
 
 @Component({
   selector: 'lex-app-layout',
@@ -46,6 +53,17 @@ export class AppLayoutComponent {
     const r = this.auth.role();
     return r === 'administrador' ? 'Administrador' : r === 'abogado' ? 'Abogado' : 'Cliente';
   });
+
+  /** Dropdown de la campana: primero el listado, luego navegación al seleccionar. */
+  readonly notifOpen = signal(false);
+  toggleNotifs(): void { this.notifOpen.update((v) => !v); }
+  closeNotifs(): void { this.notifOpen.set(false); }
+
+  openNotification(n: AppNotification): void {
+    this.notifs.markRead(n.id);
+    this.closeNotifs();
+    this.router.navigateByUrl(n.route ?? NOTIF_ROUTE[n.tipo]);
+  }
 
   logout(): void {
     this.authService.logout();

@@ -6,30 +6,67 @@
     <div class="cd-meta"><span class="muted">Apertura</span><b>{{ case.opened }}</b></div>
     <div class="cd-meta"><span class="muted">Vencimiento</span><b>{{ case.due }}</b></div>
     <div class="cd-chips">
-      <lex-status-chip [status]="case.estado" />
-      <lex-priority-chip [priority]="case.prioridad" />
+      <lex-status-chip [status]="liveCase().estado" />
+      <lex-priority-chip [priority]="liveCase().prioridad" />
     </div>
   </div>
 
   <div class="tabs">
     <button [class.on]="tab() === 'timeline'" (click)="setTab('timeline')">Línea de tiempo</button>
     <button [class.on]="tab() === 'docs'" (click)="setTab('docs')">Documentos</button>
+    <button [class.on]="tab() === 'kanban'" (click)="setTab('kanban')">Kanban</button>
   </div>
 
+  <!-- ===== Línea de tiempo ===== -->
   @if (tab() === 'timeline') {
+    @if (editable) {
+      <div class="note-bar">
+        @if (!showNoteForm()) {
+          <button class="btn btn-gold btn-sm" (click)="toggleNoteForm()">
+            <lex-icon name="plus" [size]="14" /> Agregar actualización</button>
+        } @else {
+          <div class="note-form">
+            <textarea class="textarea" rows="3" #noteArea
+              placeholder="Escriba una observación, avance, resultado de audiencia o nota relevante…"
+              (input)="note = noteArea.value"></textarea>
+            <div class="row" style="justify-content:flex-end;gap:8px;margin-top:8px">
+              <button class="btn btn-ghost btn-sm" (click)="toggleNoteForm()">Cancelar</button>
+              <button class="btn btn-gold btn-sm" (click)="saveNote()">Guardar actualización</button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
     <div class="tl">
-      @for (e of timeline(); track e.title; let last = $last) {
+      @for (e of timeline(); track e.id; let last = $last) {
         <div class="tl-item" [class.last]="last">
-          <span class="tl-dot" [style.background]="e.color"><lex-icon [name]="e.icon" [size]="13" color="#fff" /></span>
+          <span class="tl-dot" [style.background]="meta(e.tipo).color">
+            <lex-icon [name]="meta(e.tipo).icon" [size]="13" color="#fff" /></span>
           <div class="tl-body">
-            <b>{{ e.title }}</b>
-            <span class="tl-time">{{ e.time }}</span>
-            <p>{{ e.desc }}</p>
+            <b>{{ e.titulo }}</b>
+            <span class="tl-time">{{ e.time }} · {{ e.autor }}</span>
+            <p>{{ e.detalle }}</p>
           </div>
         </div>
+      } @empty {
+        <div class="empty"><div class="empty-ic"><lex-icon name="clock" [size]="28" /></div>
+          <h3>Sin actividad</h3><p>Este expediente aún no registra movimientos.</p></div>
       }
     </div>
-  } @else {
+  }
+
+  <!-- ===== Documentos ===== -->
+  @if (tab() === 'docs') {
+    @if (editable) {
+      <div class="note-bar">
+        <input type="file" hidden #fileInput accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.webp"
+          (change)="onFileSelected(fileInput)" />
+        <button class="btn btn-gold btn-sm" (click)="fileInput.click()">
+          <lex-icon name="upload" [size]="14" /> Subir documento</button>
+      </div>
+    }
+
     @if (documents().length) {
       <div class="doc-list">
         @for (d of documents(); track d.id) {
@@ -37,6 +74,7 @@
             <span class="doc-ic"><lex-icon name="doc" [size]="16" /></span>
             <div class="doc-info"><b>{{ d.name }}</b><span class="muted">{{ d.size }} · {{ d.by }} · {{ d.date }}</span></div>
             <span class="doc-ext">{{ d.ext }}</span>
+            <button class="doc-dl" title="Descargar"><lex-icon name="download" [size]="15" /></button>
           </div>
         }
       </div>
@@ -44,6 +82,11 @@
       <div class="empty"><div class="empty-ic"><lex-icon name="doc" [size]="28" /></div>
         <h3>Sin documentos</h3><p>Este expediente aún no tiene documentos.</p></div>
     }
+  }
+
+  <!-- ===== Kanban del expediente ===== -->
+  @if (tab() === 'kanban') {
+    <app-case-kanban [caseId]="case.id" [editable]="editable" />
   }
 
   <style>
@@ -54,6 +97,8 @@
     .tabs{display:flex;gap:4px;background:var(--surface-3);padding:4px;border-radius:10px;margin:16px 0 18px}
     .tabs button{flex:1;padding:8px 12px;border-radius:7px;font-size:13px;font-weight:600;color:var(--ink-soft)}
     .tabs button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow-sm)}
+    .note-bar{margin-bottom:16px}
+    .note-form .textarea{width:100%}
     .tl-item{display:flex;gap:13px;position:relative;padding-bottom:18px}
     .tl-item:not(.last)::before{content:'';position:absolute;left:15px;top:30px;bottom:0;width:2px;background:var(--line)}
     .tl-dot{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:none;z-index:1}
@@ -68,5 +113,7 @@
     .doc-info b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .doc-info .muted{font-size:11.5px}
     .doc-ext{font-size:10.5px;font-weight:700;color:var(--ink-soft);background:var(--surface-3);padding:3px 8px;border-radius:6px}
+    .doc-dl{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:var(--surface-3);color:var(--ink-2)}
+    .doc-dl:hover{background:var(--gold-wash);color:var(--gold)}
   </style>
 </lex-modal>
