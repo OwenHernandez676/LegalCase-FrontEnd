@@ -23,21 +23,6 @@
   --radius: 14px;        --radius-sm: 10px;     --radius-lg: 20px;
 }
 
-[data-theme='dark'] {
-  --navy: #060E17;       --navy-2: #0B1828;     --navy-3: #14293D;
-  --gold: #C99B3F;       --gold-bright: #E1B851;
-  --ink: #E9ECF1;        --ink-2: #C4CBD4;      --ink-soft: #94A0AE;
-  --ink-faint: #6B7785;
-  --bg: #0A1119;         --surface: #111C28;    --surface-2: #0E1822;
-  --surface-3: #18242F;
-  --line: #213040;       --line-strong: #2C3D50;
-  --blue: #5B9BD8;       --blue-soft: #15293C;
-  --violet: #9885C4;     --violet-soft: #221E36;
-  --success: #4FB286;    --success-soft: #11281F;
-  --danger: #E0685E;     --danger-soft: #2C1715;
-  --gold-bright: #E1B851; --gold-soft: #6E5A2C; --gold-wash: #1E1A10;
-  --shadow-lg: 0 18px 48px rgba(0,0,0,.5);
-}
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
