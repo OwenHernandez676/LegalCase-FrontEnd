@@ -5,7 +5,7 @@
  */
 import {
   User, LegalRequest, LegalCase, LegalDocument, CalendarEvent,
-  AppNotification, CaseActivity, CaseTask, Conversation,
+  AppNotification, CaseActivity, Conversation,
 } from '../models';
 
 export const MOCK_USERS: User[] = [
@@ -115,15 +115,4 @@ export const MOCK_CONVERSATIONS: Conversation[] = [
       { id: 'mm10', me: false, text: 'Ahora esperamos la fecha de audiencia. Le notificaré en cuanto la confirmen.', time: '10:35' },
     ],
   },
-];
-
-export const MOCK_CASE_TASKS: CaseTask[] = [
-  { id: 't1', caseId: 'EXP-2048', titulo: 'Redactar escritura de constitución', estado: 'Finalizado' },
-  { id: 't2', caseId: 'EXP-2048', titulo: 'Presentar solicitud de registro mercantil', estado: 'En proceso' },
-  { id: 't3', caseId: 'EXP-2048', titulo: 'Búsqueda fonética de la marca', estado: 'Pendiente' },
-  { id: 't4', caseId: 'EXP-2047', titulo: 'Presentar demanda ante el juzgado', estado: 'Finalizado' },
-  { id: 't5', caseId: 'EXP-2047', titulo: 'Preparar pruebas documentales', estado: 'En revisión' },
-  { id: 't6', caseId: 'EXP-2047', titulo: 'Citar testigos a audiencia', estado: 'Pendiente' },
-  { id: 't7', caseId: 'EXP-2046', titulo: 'Agendar mediación con proveedor', estado: 'En proceso' },
-  { id: 't8', caseId: 'EXP-2045', titulo: 'Entregar resolución de divorcio', estado: 'Finalizado' },
 ];

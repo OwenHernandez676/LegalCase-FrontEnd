@@ -1,7 +1,7 @@
 @if (!editable) {
-  <p class="kb-hint muted">Vista de progreso del expediente. Su abogado actualiza el estado y las tareas del caso.</p>
+  <p class="kb-hint muted">Vista de progreso del expediente. Su abogado actualiza el estado del caso.</p>
 } @else {
-  <p class="kb-hint muted">Arrastre las tarjetas entre columnas para actualizar su estado. La tarjeta dorada representa el expediente.</p>
+  <p class="kb-hint muted">Arrastre la tarjeta dorada entre columnas para actualizar el estado del expediente.</p>
 }
 
 <div class="kb-cols">
@@ -11,10 +11,9 @@
       <div class="kb-head">
         <span class="kb-dot" [style.background]="col.color"></span>
         <b>{{ col.key }}</b>
-        <span class="kb-count">{{ tasksIn(col.key).length + (liveCase()?.estado === col.key ? 1 : 0) }}</span>
+        <span class="kb-count">{{ liveCase()?.estado === col.key ? 1 : 0 }}</span>
       </div>
 
-      <!-- Tarjeta del expediente: moverla cambia el estado del caso -->
       @if (liveCase(); as c) {
         @if (c.estado === col.key) {
           <div class="kb-card case" [class.grab]="editable" [attr.draggable]="editable"
@@ -31,44 +30,6 @@
               <span class="muted"><lex-icon name="clock" [size]="12" /> {{ c.due }}</span>
             </div>
           </div>
-        }
-      }
-
-      <!-- Tarjetas de trabajo -->
-      @for (t of tasksIn(col.key); track t.id) {
-        <div class="kb-card task" [class.grab]="editable" [attr.draggable]="editable && editingId() !== t.id"
-          (dragstart)="onDragTask(t)" (dragend)="onDragEnd()">
-          @if (editingId() === t.id) {
-            <input class="kb-input" #editBox [value]="t.titulo" autofocus
-              (keyup.enter)="confirmEdit(t, editBox.value)"
-              (keyup.escape)="cancelEdit()"
-              (blur)="confirmEdit(t, editBox.value)" />
-          } @else {
-            <div class="kb-task-row">
-              <span class="kb-title">{{ t.titulo }}</span>
-              @if (editable) {
-                <span class="kb-acts">
-                  <button title="Editar" (click)="startEdit(t)"><lex-icon name="doc" [size]="12" /></button>
-                  <button title="Eliminar" class="del" (click)="removeTask(t)"><lex-icon name="x" [size]="12" /></button>
-                </span>
-              }
-            </div>
-          }
-        </div>
-      }
-
-      <!-- Nueva tarjeta -->
-      @if (editable) {
-        @if (addingIn() === col.key) {
-          <div class="kb-card task">
-            <input class="kb-input" #addBox placeholder="Nombre de la tarjeta…" autofocus
-              (keyup.enter)="confirmAdd(addBox.value)"
-              (keyup.escape)="cancelAdd()"
-              (blur)="confirmAdd(addBox.value)" />
-          </div>
-        } @else {
-          <button class="kb-add" (click)="startAdd(col.key)">
-            <lex-icon name="plus" [size]="13" /> Nueva tarjeta</button>
         }
       }
     </div>

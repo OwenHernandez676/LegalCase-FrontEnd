@@ -4,7 +4,6 @@ export * from './request.model';
 export * from './case.model';
 export * from './document.model';
 export * from './event.model';
-export * from './task.model';
 export * from './message.model';
 export * from './notification.model';
 export * from './activity.model';

@@ -4,13 +4,14 @@ import { Observable } from 'rxjs';
 import { environment } from '@env/environment';
 
 /**
- * Cliente HTTP genérico y tipado contra la API NestJS.
+ * Cliente HTTP genérico.
  * Centraliza la URL base y simplifica el consumo desde los servicios de dominio.
  */
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
   private readonly base = environment.apiUrl;
+  
 
   get<T>(path: string, params?: Record<string, string | number>): Observable<T> {
     let httpParams = new HttpParams();

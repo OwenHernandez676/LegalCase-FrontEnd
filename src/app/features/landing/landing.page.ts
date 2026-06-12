@@ -22,7 +22,6 @@ export class LandingPage {
     { icon: 'layers', title: 'Tablero Kanban', desc: 'Avance visual de los casos por estado, de un vistazo.' },
     { icon: 'cal', title: 'Calendario legal', desc: 'Audiencias, reuniones y vencimientos siempre a la vista.' },
     { icon: 'doc', title: 'Gestión documental', desc: 'Repositorio seguro organizado por expediente.' },
-    { icon: 'chart', title: 'Reportes y métricas', desc: 'Indicadores de desempeño del despacho en tiempo real.' },
   ];
   readonly stats = [
     { v: '94%', l: 'Casos resueltos a favor' },
