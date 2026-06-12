@@ -3,6 +3,7 @@ import { PageHeadComponent } from '@shared/components/page-head/page-head.compon
 import { PanelComponent } from '@shared/components/panel/panel.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { EventsService, EventInput, MONTHS_ES, monthShort } from '@core/services/events.service';
+import { CasesService } from '@core/services/cases.service';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { AuthStore } from '@core/store/auth.store';
 import { CalendarEvent } from '@core/models';
@@ -18,6 +19,7 @@ const YEAR = 2026;
 })
 export class CalendarPage {
   private readonly eventsSvc = inject(EventsService);
+  private readonly casesSvc = inject(CasesService);
   private readonly toast = inject(ToastService);
   private readonly auth = inject(AuthStore);
 
@@ -53,6 +55,12 @@ export class CalendarPage {
   }
 
   monthShort(m: number): string { return monthShort(m); }
+
+  /** Código visible (EXP-####) del expediente vinculado al evento. */
+  caseCode(caseId: string): string {
+    const c = this.casesSvc.cases().find((x) => x.id === caseId);
+    return c?.codigo ?? caseId;
+  }
 
   openForm(): void { this.showForm.set(true); }
   closeForm(): void { this.showForm.set(false); }

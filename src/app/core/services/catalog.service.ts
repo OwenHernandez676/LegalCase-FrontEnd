@@ -1,6 +1,9 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, effect, inject } from '@angular/core';
+import { Observable, map, tap } from 'rxjs';
 import { LegalDocument, User } from '../models';
-import { MOCK_DOCS, MOCK_LAWYERS } from './mock-data';
+import { ApiService } from './api.service';
+import { AuthStore } from '../store/auth.store';
+import { ApiDocument, ApiUser, mapDocument, mapUser, toApiFileType } from './api.mappers';
 
 /** Datos que recibe el formulario de alta/edición de abogados. */
 export interface LawyerInput {
@@ -11,48 +14,111 @@ export interface LawyerInput {
   activo: boolean;
 }
 
+/**
+ * Contraseña inicial de los abogados creados desde el panel:
+ * el backend exige contrasena en POST /api/users y el formulario no la pide.
+ */
+const DEFAULT_LAWYER_PASSWORD = 'LegalCase#2026';
+
 /** Catálogos de apoyo (documentos, abogados) expuestos como signals. */
 @Injectable({ providedIn: 'root' })
 export class CatalogService {
-  private seq = 0;
-  private readonly _documents = signal<LegalDocument[]>(MOCK_DOCS);
+  private readonly api = inject(ApiService);
+  private readonly auth = inject(AuthStore);
+
+  private readonly _documents = signal<LegalDocument[]>([]);
   readonly documents = this._documents.asReadonly();
 
-  addDocument(doc: Omit<LegalDocument, 'id' | 'date'>): void {
-    const item: LegalDocument = {
-      ...doc,
-      id: 'd-' + Date.now() + '-' + ++this.seq,
-      date: new Date().toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' }),
-    };
-    this._documents.update((list) => [item, ...list]);
-  }
-
-  private readonly _lawyers = signal<User[]>(MOCK_LAWYERS);
+  private readonly _lawyers = signal<User[]>([]);
   readonly lawyers = this._lawyers.asReadonly();
   /** Solo abogados activos: los únicos que pueden recibir asignaciones. */
   readonly activeLawyers = computed(() => this._lawyers().filter((l) => l.activo));
 
-  addLawyer(data: LawyerInput): void {
-    const nuevo: User = {
-      id: 'l-' + Date.now(),
-      rol: 'abogado',
-      casos: 0,
-      nombre: data.nombre,
-      correo: data.correo,
-      telefono: data.telefono,
-      especialidad: data.especialidad,
-      activo: data.activo,
-    };
-    this._lawyers.update((list) => [nuevo, ...list]);
+  constructor() {
+    effect(() => {
+      if (!this.auth.isAuthenticated()) {
+        this._documents.set([]);
+        this._lawyers.set([]);
+        return;
+      }
+      this.loadDocuments();
+      // GET /api/users es solo para administrador.
+      if (this.auth.role() === 'administrador') this.loadLawyers();
+    });
   }
 
-  updateLawyer(id: string, data: LawyerInput): void {
-    this._lawyers.update((list) =>
-      list.map((l) => (l.id === id ? { ...l, ...data } : l)),
+  loadDocuments(): void {
+    this.api.get<ApiDocument[]>('documents').subscribe({
+      next: (list) => this._documents.set(list.map(mapDocument)),
+      error: () => this._documents.set([]),
+    });
+  }
+
+  loadLawyers(): void {
+    this.api.get<ApiUser[]>('users', { rol: 'abogado' }).subscribe({
+      next: (list) => this._lawyers.set(list.map(mapUser)),
+      error: () => this._lawyers.set([]),
+    });
+  }
+
+  addDocument(doc: Omit<LegalDocument, 'id' | 'date'>): void {
+    this.api.post<ApiDocument>('documents', {
+      nombre: doc.name,
+      tipo: toApiFileType(doc.ext),
+      tamano: doc.size,
+      expedienteId: doc.caseId,
+      subidoPor: doc.by,
+    }).subscribe({
+      next: (dto) => this._documents.update((list) => [mapDocument(dto), ...list]),
+    });
+  }
+
+  /**
+   * Alta de abogado. Devuelve el Observable para que la página reaccione al
+   * resultado HTTP: en éxito actualiza la lista de forma optimista y refresca
+   * desde el backend (refetch de seguridad); en error propaga para mostrar el
+   * mensaje real de la API. El backend exige contrasena en POST /api/users.
+   */
+  addLawyer(data: LawyerInput): Observable<User> {
+    return this.api.post<ApiUser>('users', {
+      nombre: data.nombre,
+      correo: data.correo,
+      contrasena: DEFAULT_LAWYER_PASSWORD,
+      rol: 'abogado',
+      especialidad: data.especialidad,
+      telefono: data.telefono,
+      activo: data.activo,
+    }).pipe(
+      map(mapUser),
+      tap((user) => {
+        this._lawyers.update((list) => [user, ...list.filter((l) => l.id !== user.id)]);
+        this.loadLawyers(); // refetch de seguridad: reconcilia con la BD
+      }),
     );
   }
 
-  setLawyerActive(id: string, activo: boolean): void {
+  /** Edición de abogado. El backend no permite cambiar el correo en PATCH /api/users/:id. */
+  updateLawyer(id: string, data: LawyerInput): Observable<User> {
+    return this.api.patch<ApiUser>(`users/${id}`, {
+      nombre: data.nombre,
+      especialidad: data.especialidad,
+      telefono: data.telefono,
+      activo: data.activo,
+    }).pipe(
+      map(mapUser),
+      tap((user) => {
+        this._lawyers.update((list) => list.map((l) => (l.id === id ? user : l)));
+        this.loadLawyers(); // refetch de seguridad
+      }),
+    );
+  }
+
+  /** Habilita/inhabilita un abogado (PATCH optimista con reconciliación). */
+  setLawyerActive(id: string, activo: boolean): Observable<User> {
     this._lawyers.update((list) => list.map((l) => (l.id === id ? { ...l, activo } : l)));
+    return this.api.patch<ApiUser>(`users/${id}`, { activo }).pipe(
+      map(mapUser),
+      tap((user) => this._lawyers.update((list) => list.map((l) => (l.id === id ? user : l)))),
+    );
   }
 }

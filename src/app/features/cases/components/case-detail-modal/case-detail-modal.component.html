@@ -1,4 +1,4 @@
-<lex-modal [title]="case.titulo" [sub]="case.id + ' · ' + case.cliente" [lg]="true" (close)="close.emit()">
+<lex-modal [title]="case.titulo" [sub]="(case.codigo || case.id) + ' · ' + case.cliente" [lg]="true" (close)="close.emit()">
 
   <div class="cd-head">
     <div class="cd-meta"><span class="muted">Cliente</span><b>{{ case.cliente }}</b></div>

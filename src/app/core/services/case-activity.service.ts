@@ -1,20 +1,54 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, effect, inject, untracked } from '@angular/core';
 import { CaseActivity } from '../models';
-import { MOCK_CASE_ACTIVITY } from './mock-data';
+import { ApiService } from './api.service';
+import { AuthStore } from '../store/auth.store';
+import { ApiActivity, isObjectId, mapActivity } from './api.mappers';
 
 /**
  * Registro de actividad por expediente: fuente única de la línea de tiempo.
- * Observaciones, documentos, cambios de estado y eventos generan entradas aquí;
- * abogado y cliente leen la misma cronología.
+ * Se alimenta de GET /api/activities y GET /api/activities/case/:id.
+ * El backend no expone POST /api/activities, por lo que log() mantiene la
+ * entrada de forma local (optimista) para conservar la experiencia visual.
  */
 @Injectable({ providedIn: 'root' })
 export class CaseActivityService {
   private seq = 0;
-  private readonly _items = signal<CaseActivity[]>(MOCK_CASE_ACTIVITY);
+  private readonly api = inject(ApiService);
+  private readonly auth = inject(AuthStore);
+
+  private readonly _items = signal<CaseActivity[]>([]);
   readonly items = this._items.asReadonly();
+
+  /** Expedientes cuya actividad ya fue solicitada al backend. */
+  private readonly fetched = new Set<string>();
+
+  constructor() {
+    effect(() => {
+      if (this.auth.isAuthenticated()) this.loadRecent();
+      else {
+        this._items.set([]);
+        this.fetched.clear();
+      }
+    });
+  }
+
+  loadRecent(): void {
+    this.api.get<ApiActivity[]>('activities', { limit: 100 }).subscribe({
+      next: (list) => this.merge(list.map(mapActivity)),
+      error: () => this._items.set([]),
+    });
+  }
 
   /** Actividad de un expediente, de lo más reciente a lo más antiguo. */
   byCase(caseId: string): CaseActivity[] {
+    if (isObjectId(caseId) && !this.fetched.has(caseId)) {
+      this.fetched.add(caseId);
+      untracked(() => {
+        this.api.get<ApiActivity[]>(`activities/case/${caseId}`).subscribe({
+          next: (list) => this.merge(list.map(mapActivity)),
+        });
+      });
+    }
     return this._items()
       .filter((a) => a.caseId === caseId)
       .sort((a, b) => b.ts - a.ts);
@@ -29,5 +63,13 @@ export class CaseActivityService {
       time: now.toLocaleString('es', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
     };
     this._items.update((list) => [item, ...list]);
+  }
+
+  /** Une actividades del backend sin duplicar las ya presentes. */
+  private merge(incoming: CaseActivity[]): void {
+    this._items.update((list) => {
+      const ids = new Set(list.map((a) => a.id));
+      return [...incoming.filter((a) => !ids.has(a.id)), ...list];
+    });
   }
 }

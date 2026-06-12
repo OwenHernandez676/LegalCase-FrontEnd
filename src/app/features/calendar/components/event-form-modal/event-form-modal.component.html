@@ -10,7 +10,7 @@
       <label>Expediente relacionado</label>
       <select class="select" formControlName="caseId">
         <option value="">— Sin expediente —</option>
-        @for (c of cases(); track c.id) { <option [value]="c.id">{{ c.id }} · {{ c.cliente }}</option> }
+        @for (c of cases(); track c.id) { <option [value]="c.id">{{ c.codigo || c.id }} · {{ c.cliente }}</option> }
       </select>
     </div>
     <div class="field-row">

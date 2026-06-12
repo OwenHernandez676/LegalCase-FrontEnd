@@ -18,7 +18,7 @@
       <tbody>
         @for (c of list(); track c.id) {
           <tr (click)="openCase(c)">
-            <td><span class="case-id">{{ c.id }}</span>
+            <td><span class="case-id">{{ c.codigo || c.id }}</span>
               <div style="font-size:13px;font-weight:600;max-width:230px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.titulo }}</div></td>
             <td style="font-size:13px">{{ c.cliente }}</td>
             <td><div class="user-cell"><lex-avatar [name]="c.abogado" [size]="28" />
