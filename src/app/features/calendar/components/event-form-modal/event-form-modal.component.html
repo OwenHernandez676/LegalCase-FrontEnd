@@ -1,0 +1,46 @@
+<lex-modal title="Nuevo evento" sub="Mayo 2026 · se reflejará en el dashboard y en el expediente"
+  (close)="close.emit()">
+
+  <form [formGroup]="form">
+    <div class="field">
+      <label>Título <span class="req">*</span></label>
+      <input class="input" type="text" formControlName="title" placeholder="Ej. Audiencia preliminar" />
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Tipo <span class="req">*</span></label>
+        <select class="select" formControlName="type">
+          @for (t of types; track t) { <option [value]="t">{{ t }}</option> }
+        </select>
+      </div>
+      <div class="field">
+        <label>Expediente relacionado</label>
+        <select class="select" formControlName="caseId">
+          <option value="">— Sin expediente —</option>
+          @for (c of cases(); track c.id) { <option [value]="c.id">{{ c.id }} · {{ c.cliente }}</option> }
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Día (mayo 2026) <span class="req">*</span></label>
+        <select class="select" formControlName="day">
+          @for (d of days; track d) { <option [value]="d">{{ d }}</option> }
+        </select>
+      </div>
+      <div class="field">
+        <label>Hora <span class="req">*</span></label>
+        <input class="input" type="time" formControlName="time" />
+      </div>
+    </div>
+  </form>
+
+  <div footer class="m-foot">
+    <button class="btn btn-ghost" type="button" (click)="close.emit()">Cancelar</button>
+    <button class="btn btn-gold" type="button" (click)="submit()">Guardar evento</button>
+  </div>
+
+  <style>
+    .m-foot{display:flex;justify-content:flex-end;gap:10px;padding:16px 22px;border-top:1px solid var(--line)}
+  </style>
+</lex-modal>

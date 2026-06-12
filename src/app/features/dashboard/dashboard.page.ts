@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PageHeadComponent } from '@shared/components/page-head/page-head.component';
 import { PanelComponent } from '@shared/components/panel/panel.component';
@@ -12,7 +12,9 @@ import { AuthStore } from '@core/store/auth.store';
 import { CasesService } from '@core/services/cases.service';
 import { RequestsService } from '@core/services/requests.service';
 import { CatalogService } from '@core/services/catalog.service';
-import { Priority, RequestStatus } from '@core/models';
+import { EventsService } from '@core/services/events.service';
+import { LegalCase, Priority, RequestStatus } from '@core/models';
+import { CaseDetailModalComponent } from '@features/cases/components/case-detail-modal/case-detail-modal.component';
 
 const PRIORITY_DEFS: { label: Priority; color: string }[] = [
   { label: 'Crítica', color: '#6B5599' },
@@ -27,7 +29,7 @@ const DONUT_C = 2 * Math.PI * DONUT_R;
   selector: 'lex-dashboard',
   standalone: true,
   imports: [RouterLink, PageHeadComponent, PanelComponent, KpiCardComponent, AvatarComponent,
-            IconComponent, StatusChipComponent, PriorityChipComponent, ChipComponent],
+            IconComponent, StatusChipComponent, PriorityChipComponent, ChipComponent, CaseDetailModalComponent],
   templateUrl: './dashboard.page.html',
 })
 export class DashboardPage {
@@ -35,12 +37,24 @@ export class DashboardPage {
   readonly cases = inject(CasesService);
   readonly requests = inject(RequestsService);
   readonly catalog = inject(CatalogService);
+  readonly eventsSvc = inject(EventsService);
 
   readonly role = this.auth.role;
   readonly recentCases = computed(() => this.cases.cases().slice(0, 4));
   readonly recentRequests = computed(() => this.requests.requests().slice(0, 4));
-  readonly events = computed(() => this.catalog.events().slice(0, 5));
+  /** Próximos eventos sincronizados con el módulo de calendario. */
+  readonly events = this.eventsSvc.upcoming;
   readonly clientCase = computed(() => this.cases.cases()[1]);
+  /** Eventos del expediente del cliente, visibles en su portal. */
+  readonly clientEvents = computed(() => {
+    this.eventsSvc.events(); // dependencia reactiva
+    return this.eventsSvc.byCase(this.clientCase().id);
+  });
+
+  /** Expediente abierto en el portal del cliente (modo solo lectura). */
+  readonly viewingCase = signal<LegalCase | null>(null);
+  openClientCase(): void { this.viewingCase.set(this.clientCase()); }
+  closeClientCase(): void { this.viewingCase.set(null); }
 
   /** Abogados activos con su carga de casos, para el panel "Ocupación de abogados". */
   readonly lawyerLoad = computed(() => this.catalog.activeLawyers());

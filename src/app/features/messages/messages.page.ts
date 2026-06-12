@@ -1,10 +1,10 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { PageHeadComponent } from '@shared/components/page-head/page-head.component';
 import { AvatarComponent } from '@shared/components/avatar/avatar.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { AuthStore } from '@core/store/auth.store';
-import { ChatMessage } from '@core/models';
-import { MOCK_CHAT } from '@core/services/mock-data';
+import { MessagesService } from '@core/services/messages.service';
+import { Conversation } from '@core/models';
 
 @Component({
   selector: 'lex-messages',
@@ -14,19 +14,34 @@ import { MOCK_CHAT } from '@core/services/mock-data';
 })
 export class MessagesPage {
   readonly auth = inject(AuthStore);
-  readonly contacts = [
-    { name: 'Lic. Rodrigo Castellanos', last: 'Le notificaré en cuanto la confirmen.', unread: 0, active: true },
-    { name: 'Dra. Mariela Fonseca', last: 'Documento recibido, gracias.', unread: 1, active: false },
-    { name: 'Lic. Ana Zelaya', last: 'El trámite quedó finalizado.', unread: 0, active: false },
-  ];
-  readonly messages = signal<ChatMessage[]>(MOCK_CHAT);
+  private readonly svc = inject(MessagesService);
+
+  /** Bandeja según el rol: el abogado ve a sus clientes; el cliente, a su abogado. */
+  readonly conversations = computed(() =>
+    this.svc.forRole(this.auth.role() ?? 'cliente'));
+
+  readonly active = computed<Conversation | null>(() => {
+    const id = this.svc.activeId();
+    return this.conversations().find((c) => c.id === id)
+      ?? this.conversations()[0]
+      ?? null;
+  });
+
   draft = '';
+
+  constructor() {
+    // Abre la primera conversación de la bandeja al entrar.
+    const first = this.conversations()[0];
+    if (first) this.svc.open(first.id);
+  }
+
+  open(c: Conversation): void { this.svc.open(c.id); }
 
   send(): void {
     const text = this.draft.trim();
-    if (!text) return;
-    const now = new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
-    this.messages.update((m) => [...m, { id: 'm' + Date.now(), me: true, text, time: now }]);
+    const conv = this.active();
+    if (!text || !conv) return;
+    this.svc.send(conv.id, text);
     this.draft = '';
   }
 }

@@ -5,7 +5,7 @@
  */
 import {
   User, LegalRequest, LegalCase, LegalDocument, CalendarEvent,
-  AppNotification, Activity, ChatMessage,
+  AppNotification, CaseActivity, CaseTask, Conversation,
 } from '../models';
 
 export const MOCK_USERS: User[] = [
@@ -63,16 +63,67 @@ export const MOCK_NOTIFS: AppNotification[] = [
   { id: 'n4', tipo: 'estado', mensaje: 'EXP-2045 cambió a Finalizado', time: 'Ayer', leida: true, icon: 'check' },
 ];
 
-export const MOCK_ACTIVITY: Activity[] = [
-  { id: 'a1', text: '**M. Fonseca** aprobó la solicitud **SOL-145**', time: 'Hace 12 min', icon: 'check', color: 'c-green' },
-  { id: 'a2', text: 'Nuevo documento en **EXP-2047**', time: 'Hace 1 h', icon: 'doc', color: 'c-blue' },
-  { id: 'a3', text: '**R. Castellanos** actualizó el estado de **EXP-2047**', time: 'Hace 3 h', icon: 'flag', color: 'c-gold' },
-  { id: 'a4', text: 'Nueva solicitud recibida: **SOL-148**', time: 'Hace 5 h', icon: 'inbox', color: 'c-violet' },
+const DAY = 86_400_000;
+const NOW = Date.now();
+
+export const MOCK_CASE_ACTIVITY: CaseActivity[] = [
+  { id: 'ca1', caseId: 'EXP-2048', tipo: 'estado', titulo: 'Prioridad actualizada a Alta', detalle: 'El administrador ajustó la prioridad del caso.', autor: 'Mariela Fonseca', time: 'Hace 2 días', ts: NOW - 2 * DAY },
+  { id: 'ca2', caseId: 'EXP-2048', tipo: 'documento', titulo: 'Documento agregado al expediente', detalle: '"Escritura de constitución.pdf"', autor: 'Mariela Fonseca', time: 'Hace 4 días', ts: NOW - 4 * DAY },
+  { id: 'ca3', caseId: 'EXP-2048', tipo: 'observacion', titulo: 'Observación del abogado', detalle: 'Se registró una nota sobre el avance del caso.', autor: 'Mariela Fonseca', time: 'Hace 1 semana', ts: NOW - 7 * DAY },
+  { id: 'ca4', caseId: 'EXP-2048', tipo: 'creacion', titulo: 'Expediente creado', detalle: 'Se aprobó la solicitud y se abrió el expediente.', autor: 'Sistema', time: '06 Feb 2026', ts: NOW - 90 * DAY },
+  { id: 'ca5', caseId: 'EXP-2047', tipo: 'observacion', titulo: 'Observación del abogado', detalle: 'Se presentó la demanda ante el juzgado competente.', autor: 'Rodrigo Castellanos', time: 'Hace 2 horas', ts: NOW - 7_200_000 },
+  { id: 'ca6', caseId: 'EXP-2047', tipo: 'documento', titulo: 'Documento agregado al expediente', detalle: '"Demanda inicial.pdf"', autor: 'Rodrigo Castellanos', time: 'Hace 5 días', ts: NOW - 5 * DAY },
+  { id: 'ca7', caseId: 'EXP-2047', tipo: 'creacion', titulo: 'Expediente creado', detalle: 'Se aprobó la solicitud y se abrió el expediente.', autor: 'Sistema', time: '04 Feb 2026', ts: NOW - 92 * DAY },
+  { id: 'ca8', caseId: 'EXP-2046', tipo: 'estado', titulo: 'Estado actualizado', detalle: 'El expediente pasó de Pendiente a En proceso.', autor: 'Diego Maradiaga', time: 'Hace 3 días', ts: NOW - 3 * DAY },
+  { id: 'ca9', caseId: 'EXP-2046', tipo: 'creacion', titulo: 'Expediente creado', detalle: 'Se aprobó la solicitud y se abrió el expediente.', autor: 'Sistema', time: '28 Ene 2026', ts: NOW - 99 * DAY },
+  { id: 'ca10', caseId: 'EXP-2045', tipo: 'estado', titulo: 'Estado actualizado', detalle: 'El expediente pasó de En revisión a Finalizado.', autor: 'Ana Zelaya', time: '05 May 2026', ts: NOW - 20 * DAY },
+  { id: 'ca11', caseId: 'EXP-2045', tipo: 'creacion', titulo: 'Expediente creado', detalle: 'Se aprobó la solicitud y se abrió el expediente.', autor: 'Sistema', time: '12 Ene 2026', ts: NOW - 115 * DAY },
+  { id: 'ca12', caseId: 'EXP-2044', tipo: 'creacion', titulo: 'Expediente creado', detalle: 'Se aprobó la solicitud y se abrió el expediente.', autor: 'Sistema', time: '20 May 2026', ts: NOW - 5 * DAY },
+  { id: 'ca13', caseId: 'EXP-2041', tipo: 'creacion', titulo: 'Expediente creado', detalle: 'Se aprobó la solicitud y se abrió el expediente.', autor: 'Sistema', time: '15 Feb 2026', ts: NOW - 81 * DAY },
 ];
 
-export const MOCK_CHAT: ChatMessage[] = [
-  { id: 'm1', me: false, text: 'Buenas tardes Carlos. Le informo que la demanda fue admitida por el juzgado.', time: '10:24' },
-  { id: 'm2', me: true, text: '¡Excelente noticia! ¿Cuáles son los siguientes pasos?', time: '10:31' },
-  { id: 'm3', me: false, text: 'Ahora esperamos la fecha de audiencia. Le notificaré en cuanto la confirmen.', time: '10:35' },
-  { id: 'm4', me: true, text: 'Perfecto, muchas gracias por mantenerme informado.', time: '10:36' },
+export const MOCK_CONVERSATIONS: Conversation[] = [
+  // Bandeja del abogado: una conversación por cliente.
+  {
+    id: 'cv1', nombre: 'Carlos Mendoza', detalle: 'Cliente · EXP-2047', visiblePara: 'abogado', noLeidos: 1,
+    mensajes: [
+      { id: 'mm1', me: true, text: 'Buenas tardes Carlos. Le informo que la demanda fue admitida por el juzgado.', time: '10:24' },
+      { id: 'mm2', me: false, text: '¡Excelente noticia! ¿Cuáles son los siguientes pasos?', time: '10:31' },
+      { id: 'mm3', me: true, text: 'Ahora esperamos la fecha de audiencia. Le notificaré en cuanto la confirmen.', time: '10:35' },
+      { id: 'mm4', me: false, text: 'Perfecto, muchas gracias por mantenerme informado.', time: '10:36' },
+    ],
+  },
+  {
+    id: 'cv2', nombre: 'Grupo Andares S.A.', detalle: 'Cliente · EXP-2048', visiblePara: 'abogado', noLeidos: 0,
+    mensajes: [
+      { id: 'mm5', me: false, text: 'Adjuntamos la documentación societaria solicitada.', time: '09:02' },
+      { id: 'mm6', me: true, text: 'Documento recibido, gracias. Procedo con el registro.', time: '09:15' },
+    ],
+  },
+  {
+    id: 'cv3', nombre: 'Familia Discua', detalle: 'Cliente · EXP-2045', visiblePara: 'abogado', noLeidos: 0,
+    mensajes: [
+      { id: 'mm7', me: true, text: 'El trámite quedó finalizado. Pueden pasar por la resolución.', time: 'Ayer' },
+    ],
+  },
+  // Bandeja del cliente: su abogado asignado.
+  {
+    id: 'cv4', nombre: 'Lic. Rodrigo Castellanos', detalle: 'Derecho Laboral · EXP-2047', visiblePara: 'cliente', noLeidos: 1,
+    mensajes: [
+      { id: 'mm8', me: false, text: 'Buenas tardes Carlos. Le informo que la demanda fue admitida por el juzgado.', time: '10:24' },
+      { id: 'mm9', me: true, text: '¡Excelente noticia! ¿Cuáles son los siguientes pasos?', time: '10:31' },
+      { id: 'mm10', me: false, text: 'Ahora esperamos la fecha de audiencia. Le notificaré en cuanto la confirmen.', time: '10:35' },
+    ],
+  },
+];
+
+export const MOCK_CASE_TASKS: CaseTask[] = [
+  { id: 't1', caseId: 'EXP-2048', titulo: 'Redactar escritura de constitución', estado: 'Finalizado' },
+  { id: 't2', caseId: 'EXP-2048', titulo: 'Presentar solicitud de registro mercantil', estado: 'En proceso' },
+  { id: 't3', caseId: 'EXP-2048', titulo: 'Búsqueda fonética de la marca', estado: 'Pendiente' },
+  { id: 't4', caseId: 'EXP-2047', titulo: 'Presentar demanda ante el juzgado', estado: 'Finalizado' },
+  { id: 't5', caseId: 'EXP-2047', titulo: 'Preparar pruebas documentales', estado: 'En revisión' },
+  { id: 't6', caseId: 'EXP-2047', titulo: 'Citar testigos a audiencia', estado: 'Pendiente' },
+  { id: 't7', caseId: 'EXP-2046', titulo: 'Agendar mediación con proveedor', estado: 'En proceso' },
+  { id: 't8', caseId: 'EXP-2045', titulo: 'Entregar resolución de divorcio', estado: 'Finalizado' },
 ];

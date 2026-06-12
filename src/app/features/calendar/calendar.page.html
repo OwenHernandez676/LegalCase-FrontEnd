@@ -1,5 +1,10 @@
 <lex-page-head title="Calendario Legal" sub="Mayo 2026 · audiencias, reuniones y vencimientos"
-  [crumbs]="['LEGALCASE','Agenda','Calendario']" />
+  [crumbs]="['LEGALCASE','Agenda','Calendario']">
+  @if (canEdit()) {
+    <button class="btn btn-gold btn-sm" (click)="openForm()">
+      <lex-icon name="plus" [size]="15" /> Nuevo evento</button>
+  }
+</lex-page-head>
 
 <div class="grid" style="grid-template-columns:1fr 300px;align-items:start">
   <lex-panel [noPad]="true">
@@ -19,13 +24,22 @@
   </lex-panel>
 
   <lex-panel title="Próximos eventos">
-    @for (e of events(); track e.id) {
+    @for (e of upcoming(); track e.id) {
       <div class="up"><span class="up-dot" [style.background]="e.color"></span>
-        <div><div class="up-t">{{ e.title }}</div>
-          <span class="muted" style="font-size:11.5px">{{ e.type }} · {{ e.day }} May · {{ e.time }}</span></div></div>
+        <div style="flex:1;min-width:0"><div class="up-t">{{ e.title }}</div>
+          <span class="muted" style="font-size:11.5px">{{ e.type }} · {{ e.day }} May · {{ e.time }}
+            @if (e.caseId) { · <b class="case-id" style="font-size:10.5px">{{ e.caseId }}</b> }</span></div>
+        @if (canEdit()) {
+          <button class="ev-x" title="Eliminar" (click)="remove(e)"><lex-icon name="x" [size]="13" /></button>
+        }
+      </div>
     }
   </lex-panel>
 </div>
+
+@if (showForm()) {
+  <app-event-form-modal (close)="closeForm()" (save)="onSave($event)" />
+}
 
 <style>
   .cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
@@ -35,7 +49,9 @@
   .dn{font-weight:700;color:var(--ink-2);font-size:12px}
   .cev{margin-top:4px;padding:3px 6px;border-left:3px solid;background:var(--surface-2);border-radius:5px;font-size:10.5px;line-height:1.3}
   .cev b{display:block;color:var(--ink-soft)}
-  .up{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .up{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);align-items:flex-start}
   .up-dot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex:none}
   .up-t{font-size:13px;font-weight:600}
+  .ev-x{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;color:var(--ink-soft);flex:none}
+  .ev-x:hover{background:var(--danger-soft);color:var(--danger)}
 </style>

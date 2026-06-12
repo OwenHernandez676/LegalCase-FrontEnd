@@ -24,10 +24,36 @@
       <div class="tb-actions">
         <button class="tb-ic" (click)="ui.toggleTheme()">
           <lex-icon [name]="ui.isDark() ? 'sun' : 'moon'" [size]="19" /></button>
-        <button class="tb-ic notif" (click)="notifs.markAllRead()">
-          <lex-icon name="bell" [size]="19" />
-          @if (notifs.unread()) { <span class="badge">{{ notifs.unread() }}</span> }
-        </button>
+        <div class="notif-wrap">
+          <button class="tb-ic notif" (click)="toggleNotifs()">
+            <lex-icon name="bell" [size]="19" />
+            @if (notifs.unread()) { <span class="badge">{{ notifs.unread() }}</span> }
+          </button>
+
+          @if (notifOpen()) {
+            <div class="notif-scrim" (click)="closeNotifs()"></div>
+            <div class="notif-panel">
+              <div class="np-head">
+                <b>Notificaciones</b>
+                @if (notifs.unread()) {
+                  <button class="np-mark" (click)="notifs.markAllRead()">Marcar todas como leídas</button>
+                }
+              </div>
+              <div class="np-list">
+                @for (n of notifs.items(); track n.id) {
+                  <button class="np-item" [class.unread]="!n.leida" (click)="openNotification(n)">
+                    <span class="np-ic"><lex-icon [name]="$any(n.icon)" [size]="15" /></span>
+                    <span class="np-body"><span class="np-msg">{{ n.mensaje }}</span>
+                      <span class="np-time">{{ n.time }}</span></span>
+                    @if (!n.leida) { <span class="np-dot"></span> }
+                  </button>
+                } @empty {
+                  <div class="np-empty">Sin notificaciones</div>
+                }
+              </div>
+            </div>
+          }
+        </div>
         <div class="me">
           <lex-avatar [name]="auth.user()?.nombre || 'Usuario'" [size]="36" />
           <div class="me-info"><b>{{ auth.user()?.nombre }}</b><span>{{ roleLabel() }}</span></div>

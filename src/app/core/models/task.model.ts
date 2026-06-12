@@ -1,9 +1,9 @@
-import { Priority } from './enums';
-export interface LegalTask {
+import { CaseStatus } from './enums';
+
+/** Tarjeta del tablero Kanban de un expediente. */
+export interface CaseTask {
   id: string;
-  titulo: string;
   caseId: string;
-  prioridad: Priority;
-  due: string;
-  completada: boolean;
+  titulo: string;
+  estado: CaseStatus;
 }
