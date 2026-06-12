@@ -38,22 +38,7 @@
       </div>
     }
 
-    <div class="tl">
-      @for (e of timeline(); track e.id; let last = $last) {
-        <div class="tl-item" [class.last]="last">
-          <span class="tl-dot" [style.background]="meta(e.tipo).color">
-            <lex-icon [name]="meta(e.tipo).icon" [size]="13" color="#fff" /></span>
-          <div class="tl-body">
-            <b>{{ e.titulo }}</b>
-            <span class="tl-time">{{ e.time }} · {{ e.autor }}</span>
-            <p>{{ e.detalle }}</p>
-          </div>
-        </div>
-      } @empty {
-        <div class="empty"><div class="empty-ic"><lex-icon name="clock" [size]="28" /></div>
-          <h3>Sin actividad</h3><p>Este expediente aún no registra movimientos.</p></div>
-      }
-    </div>
+    <app-case-timeline [caseId]="case.id" />
   }
 
   <!-- ===== Documentos ===== -->
@@ -99,13 +84,6 @@
     .tabs button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow-sm)}
     .note-bar{margin-bottom:16px}
     .note-form .textarea{width:100%}
-    .tl-item{display:flex;gap:13px;position:relative;padding-bottom:18px}
-    .tl-item:not(.last)::before{content:'';position:absolute;left:15px;top:30px;bottom:0;width:2px;background:var(--line)}
-    .tl-dot{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:none;z-index:1}
-    .tl-body{display:flex;flex-direction:column;gap:1px}
-    .tl-body b{font-size:13.5px}
-    .tl-time{font-size:11px;color:var(--ink-faint);font-weight:600}
-    .tl-body p{font-size:12.5px;color:var(--ink-soft);margin-top:3px}
     .doc-list{display:flex;flex-direction:column;gap:9px}
     .doc{display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid var(--line);border-radius:11px;background:var(--surface)}
     .doc-ic{width:36px;height:36px;border-radius:9px;background:var(--gold-wash);color:var(--gold);display:grid;place-items:center;flex:none}

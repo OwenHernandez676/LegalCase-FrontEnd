@@ -44,4 +44,12 @@ export class MessagesPage {
     this.svc.send(conv.id, text);
     this.draft = '';
   }
+
+  /** Adjunta y envía el archivo seleccionado en la conversación activa. */
+  sendFile(input: HTMLInputElement): void {
+    const file = input.files?.[0];
+    const conv = this.active();
+    if (file && conv) this.svc.sendFile(conv.id, file);
+    input.value = '';
+  }
 }

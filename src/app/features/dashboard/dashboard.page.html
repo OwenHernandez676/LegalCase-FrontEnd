@@ -75,11 +75,10 @@
     <a routerLink="/app/cases" class="btn btn-gold btn-sm"><lex-icon name="folder" [size]="15" /> Mis expedientes</a>
   </lex-page-head>
 
-  <div class="grid kpi-row" style="margin-bottom:18px">
+  <div class="grid kpi-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
     <lex-kpi-card icon="folder" label="Casos activos" [value]="cases.active()" delta="+2" />
     <lex-kpi-card icon="list" label="Tareas pendientes" value="5" iconBg="var(--blue-soft)" iconColor="var(--blue)" />
     <lex-kpi-card icon="cal" label="Audiencias semana" value="3" iconBg="var(--danger-soft)" iconColor="var(--danger)" />
-    <lex-kpi-card icon="award" label="Tasa de éxito" value="96%" iconBg="var(--success-soft)" iconColor="var(--success)" delta="+4%" />
   </div>
 
   <div class="grid" style="grid-template-columns:1.6fr 1fr">
@@ -99,7 +98,7 @@
     <lex-panel title="Próximos eventos">
       @for (e of events(); track e.id) {
         <div class="ev"><div class="ev-day" [style.color]="e.color">{{ e.day }}</div>
-          <div><div class="ev-t">{{ e.title }}</div><span class="ft">{{ e.type }} · {{ e.time }}</span></div></div>
+          <div><div class="ev-t">{{ e.title }}</div><span class="ft">{{ e.day }} {{ monthShort(e.month) }} · {{ e.time }}</span></div></div>
       }
     </lex-panel>
   </div>
@@ -108,50 +107,46 @@
 <!-- ====================== CLIENTE ====================== -->
 @if (role() === 'cliente') {
   <lex-page-head title="Hola, {{ auth.user()?.nombre }}"
-    sub="Aquí puede seguir el avance de su caso legal" [crumbs]="['LEGALCASE','Portal','Resumen']">
-    <a routerLink="/app/messages" class="btn btn-gold btn-sm"><lex-icon name="msg" [size]="15" /> Contactar abogado</a>
-  </lex-page-head>
+    sub="Siga el avance de su caso: {{ clientCase().titulo }}" [crumbs]="['LEGALCASE','Portal','Mi caso']" />
 
-  <lex-panel [noPad]="true" style="margin-bottom:18px">
-    <div class="client-hero">
-      <div><div class="row" style="gap:8px;align-items:center;margin-bottom:8px">
-        <span class="case-id" style="color:var(--gold-bright)">{{ clientCase().id }}</span>
-        <lex-status-chip [status]="clientCase().estado" /></div>
-        <h2>{{ clientCase().titulo }}</h2>
-        <p>Abierto el {{ clientCase().opened }} · Vence el {{ clientCase().due }}</p>
-        <button class="btn btn-gold btn-sm" style="margin-top:14px" (click)="openClientCase()">
-          <lex-icon name="eye" [size]="14" /> Ver expediente completo</button></div>
-      <div style="text-align:right"><div class="hero-lbl">Progreso</div>
-        <div class="hero-pct">{{ clientCase().progreso }}%</div></div>
+  <div class="grid" style="grid-template-columns:1.7fr 1fr;align-items:start">
+    <!-- Línea de tiempo del caso (principal) -->
+    <lex-panel title="Línea de tiempo del caso" sub="Actualizaciones registradas por su abogado">
+      <app-case-timeline [caseId]="clientCase().id" />
+    </lex-panel>
+
+    <div class="col">
+      <!-- Abogado asignado -->
+      <lex-panel title="Abogado asignado">
+        <div class="row" style="gap:13px;align-items:center;margin-bottom:14px">
+          <lex-avatar [name]="clientCase().abogado" [size]="50" />
+          <div style="min-width:0">
+            <b style="font-size:14px">{{ clientCase().abogado }}</b>
+            <div class="muted" style="font-size:12.5px">{{ assignedLawyer()?.especialidad || clientCase().tipo }}</div>
+            @if (assignedLawyer()?.correo) {
+              <div class="muted" style="font-size:11.5px">{{ assignedLawyer()?.correo }}</div>
+            }
+          </div>
+        </div>
+        <button class="btn btn-gold btn-block" (click)="sendMessage()">
+          <lex-icon name="msg" [size]="15" /> Enviar mensaje</button>
+      </lex-panel>
+
+      <!-- Documentos recientes -->
+      <lex-panel title="Documentos recientes" sub="Compartidos por su abogado">
+        @for (d of clientDocs(); track d.id) {
+          <div class="cdoc">
+            <span class="cdoc-ic"><lex-icon name="doc" [size]="16" /></span>
+            <div class="cdoc-info"><b>{{ d.name }}</b>
+              <span class="muted">{{ d.date }} · {{ d.size }}</span></div>
+            <button class="cdoc-dl" title="Descargar"><lex-icon name="download" [size]="15" /></button>
+          </div>
+        } @empty {
+          <p class="muted" style="font-size:13px">Aún no hay documentos compartidos.</p>
+        }
+      </lex-panel>
     </div>
-  </lex-panel>
-
-  <div class="grid kpi-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
-    <lex-kpi-card icon="doc" label="Documentos" [value]="clientCase().docs" />
-    <lex-kpi-card icon="cal" label="Eventos del caso" [value]="clientEvents().length" iconBg="var(--blue-soft)" iconColor="var(--blue)" />
-    <lex-kpi-card icon="msg" label="Mensajes nuevos" value="1" iconBg="var(--success-soft)" iconColor="var(--success)" />
   </div>
-
-  <div class="grid" style="grid-template-columns:1fr 1fr">
-    <lex-panel title="Su abogado asignado">
-      <div class="row" style="gap:13px;align-items:center">
-        <lex-avatar [name]="clientCase().abogado" [size]="48" />
-        <div><b>{{ clientCase().abogado }}</b><div class="muted" style="font-size:12.5px">{{ clientCase().tipo }}</div></div>
-      </div>
-    </lex-panel>
-    <lex-panel title="Próximos eventos" sub="Agenda de su caso">
-      @for (e of clientEvents(); track e.id) {
-        <div class="ev"><div class="ev-day" [style.color]="e.color">{{ e.day }}</div>
-          <div><div class="ev-t">{{ e.title }}</div><span class="ft">{{ e.type }} · {{ e.time }}</span></div></div>
-      } @empty {
-        <p class="muted" style="font-size:13px">No hay eventos programados para su caso.</p>
-      }
-    </lex-panel>
-  </div>
-
-  @if (viewingCase(); as c) {
-    <app-case-detail-modal [case]="c" [editable]="false" (close)="closeClientCase()" />
-  }
 }
 
 <style>
@@ -163,17 +158,19 @@
   .lg-row{display:flex;align-items:center;gap:9px;font-size:13px}
   .lg-dot{width:10px;height:10px;border-radius:3px;flex:none}
   .lg-name{flex:1;color:var(--ink-2)}
-  .feed{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid var(--line)}
-  .feed-dot{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:none}
-  .feed p{font-size:13px}.feed .ft{font-size:11px;color:var(--ink-faint)}
   .case-row{display:flex;gap:14px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
   .case-row .bar{width:4px;height:40px;border-radius:3px;flex:none}
   .case-row .ct{font-size:13.5px;font-weight:600;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .ev{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
   .ev-day{font-family:'Fraunces';font-size:22px;font-weight:600;width:34px;text-align:center}
   .ev-t{font-size:13px;font-weight:600}.ft{font-size:11px;color:var(--ink-faint)}
-  .client-hero{background:linear-gradient(135deg,var(--navy),var(--navy-2));padding:26px 28px;color:#F3F1EC;display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px}
-  .client-hero h2{font-size:22px;color:#fff;max-width:440px}.client-hero p{color:#9FB0C2;font-size:13px;margin-top:6px}
-  .hero-lbl{font-size:11px;color:#9FB0C2;font-weight:700;text-transform:uppercase}
-  .hero-pct{font-family:'Fraunces';font-size:42px;font-weight:600;color:var(--gold-bright)}
+  .col{display:flex;flex-direction:column;gap:18px}
+  .cdoc{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .cdoc:last-child{border-bottom:none}
+  .cdoc-ic{width:34px;height:34px;border-radius:9px;background:var(--gold-wash);color:var(--gold);display:grid;place-items:center;flex:none}
+  .cdoc-info{display:flex;flex-direction:column;flex:1;min-width:0}
+  .cdoc-info b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cdoc-info .muted{font-size:11px}
+  .cdoc-dl{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:var(--surface-3);color:var(--ink-2);flex:none}
+  .cdoc-dl:hover{background:var(--gold-wash);color:var(--gold)}
 </style>
