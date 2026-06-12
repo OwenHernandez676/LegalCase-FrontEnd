@@ -4,6 +4,8 @@ export interface CalendarEvent {
   title: string;
   type: EventType;
   day: number;
+  /** Mes del evento (1-12), año 2026. */
+  month: number;
   time: string;
   color: string;
   caseId?: string;

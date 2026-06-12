@@ -49,11 +49,11 @@ export const MOCK_DOCS: LegalDocument[] = [
 ];
 
 export const MOCK_EVENTS: CalendarEvent[] = [
-  { id: 'e1', title: 'Audiencia laboral', type: 'Audiencia', day: 26, time: '09:00', color: '#BB4138', caseId: 'EXP-2047' },
-  { id: 'e2', title: 'Reunión con cliente', type: 'Reunión', day: 27, time: '14:30', color: '#2E6CA8', caseId: 'EXP-2048' },
-  { id: 'e3', title: 'Vencimiento de pruebas', type: 'Vencimiento', day: 28, time: '23:59', color: '#C07E25', caseId: 'EXP-2047' },
-  { id: 'e4', title: 'Audiencia de registro', type: 'Audiencia', day: 30, time: '10:00', color: '#BB4138', caseId: 'EXP-2048' },
-  { id: 'e5', title: 'Mediación civil', type: 'Reunión', day: 8, time: '11:00', color: '#2E6CA8', caseId: 'EXP-2046' },
+  { id: 'e1', title: 'Audiencia laboral', type: 'Audiencia', day: 26, month: 5, time: '09:00', color: '#BB4138', caseId: 'EXP-2047' },
+  { id: 'e2', title: 'Reunión con cliente', type: 'Reunión', day: 27, month: 5, time: '14:30', color: '#2E6CA8', caseId: 'EXP-2048' },
+  { id: 'e3', title: 'Vencimiento de pruebas', type: 'Vencimiento', day: 28, month: 5, time: '23:59', color: '#C07E25', caseId: 'EXP-2047' },
+  { id: 'e4', title: 'Audiencia de registro', type: 'Audiencia', day: 30, month: 5, time: '10:00', color: '#BB4138', caseId: 'EXP-2048' },
+  { id: 'e5', title: 'Mediación civil', type: 'Reunión', day: 8, month: 6, time: '11:00', color: '#2E6CA8', caseId: 'EXP-2046' },
 ];
 
 export const MOCK_NOTIFS: AppNotification[] = [

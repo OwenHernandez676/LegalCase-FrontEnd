@@ -1,5 +1,5 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, computed, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { PageHeadComponent } from '@shared/components/page-head/page-head.component';
 import { PanelComponent } from '@shared/components/panel/panel.component';
 import { KpiCardComponent } from '@shared/components/kpi-card/kpi-card.component';
@@ -12,9 +12,10 @@ import { AuthStore } from '@core/store/auth.store';
 import { CasesService } from '@core/services/cases.service';
 import { RequestsService } from '@core/services/requests.service';
 import { CatalogService } from '@core/services/catalog.service';
-import { EventsService } from '@core/services/events.service';
-import { LegalCase, Priority, RequestStatus } from '@core/models';
-import { CaseDetailModalComponent } from '@features/cases/components/case-detail-modal/case-detail-modal.component';
+import { EventsService, monthShort } from '@core/services/events.service';
+import { MessagesService } from '@core/services/messages.service';
+import { Priority, RequestStatus } from '@core/models';
+import { CaseTimelineComponent } from '@features/cases/components/case-timeline/case-timeline.component';
 
 const PRIORITY_DEFS: { label: Priority; color: string }[] = [
   { label: 'Crítica', color: '#6B5599' },
@@ -29,7 +30,7 @@ const DONUT_C = 2 * Math.PI * DONUT_R;
   selector: 'lex-dashboard',
   standalone: true,
   imports: [RouterLink, PageHeadComponent, PanelComponent, KpiCardComponent, AvatarComponent,
-            IconComponent, StatusChipComponent, PriorityChipComponent, ChipComponent, CaseDetailModalComponent],
+            IconComponent, StatusChipComponent, PriorityChipComponent, ChipComponent, CaseTimelineComponent],
   templateUrl: './dashboard.page.html',
 })
 export class DashboardPage {
@@ -38,23 +39,34 @@ export class DashboardPage {
   readonly requests = inject(RequestsService);
   readonly catalog = inject(CatalogService);
   readonly eventsSvc = inject(EventsService);
+  private readonly messages = inject(MessagesService);
+  private readonly router = inject(Router);
 
   readonly role = this.auth.role;
   readonly recentCases = computed(() => this.cases.cases().slice(0, 4));
   readonly recentRequests = computed(() => this.requests.requests().slice(0, 4));
   /** Próximos eventos sincronizados con el módulo de calendario. */
   readonly events = this.eventsSvc.upcoming;
+
+  // ---- Portal del cliente ----
   readonly clientCase = computed(() => this.cases.cases()[1]);
-  /** Eventos del expediente del cliente, visibles en su portal. */
-  readonly clientEvents = computed(() => {
-    this.eventsSvc.events(); // dependencia reactiva
-    return this.eventsSvc.byCase(this.clientCase().id);
+  /** Documentos compartidos por el abogado en el caso del cliente. */
+  readonly clientDocs = computed(() =>
+    this.catalog.documents().filter((d) => d.caseId === this.clientCase().id));
+  /** Abogado asignado al caso del cliente (datos completos del catálogo). */
+  readonly assignedLawyer = computed(() => {
+    const name = this.clientCase().abogado;
+    return this.catalog.lawyers().find((l) => name.includes(l.nombre));
   });
 
-  /** Expediente abierto en el portal del cliente (modo solo lectura). */
-  readonly viewingCase = signal<LegalCase | null>(null);
-  openClientCase(): void { this.viewingCase.set(this.clientCase()); }
-  closeClientCase(): void { this.viewingCase.set(null); }
+  /** Va a Mensajes y abre la conversación con el abogado asignado. */
+  sendMessage(): void {
+    const conv = this.messages.forRole('cliente')[0];
+    if (conv) this.messages.open(conv.id);
+    this.router.navigate(['/app/messages']);
+  }
+
+  monthShort(m: number): string { return monthShort(m); }
 
   /** Abogados activos con su carga de casos, para el panel "Ocupación de abogados". */
   readonly lawyerLoad = computed(() => this.catalog.activeLawyers());

@@ -9,23 +9,12 @@ import { CaseActivityService } from '@core/services/case-activity.service';
 import { NotificationService } from '@core/services/notification.service';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { AuthStore } from '@core/store/auth.store';
-import { CaseActivityType, FileType, LegalCase } from '@core/models';
+import { LegalCase } from '@core/models';
+import { fileExt, fileSize } from '@core/utils/file.util';
 import { CaseKanbanComponent } from '../case-kanban/case-kanban.component';
+import { CaseTimelineComponent } from '../case-timeline/case-timeline.component';
 
 type Tab = 'timeline' | 'docs' | 'kanban';
-
-const ACTIVITY_META: Record<CaseActivityType, { icon: any; color: string }> = {
-  observacion: { icon: 'msg', color: '#6B5599' },
-  documento: { icon: 'doc', color: '#2E6CA8' },
-  estado: { icon: 'flag', color: '#C07E25' },
-  evento: { icon: 'cal', color: '#BB4138' },
-  creacion: { icon: 'check', color: '#2C7A57' },
-};
-
-const EXT_MAP: Record<string, FileType> = {
-  pdf: 'PDF', docx: 'DOCX', doc: 'DOCX', xlsx: 'XLSX', xls: 'XLSX',
-  png: 'IMG', jpg: 'IMG', jpeg: 'IMG', gif: 'IMG', webp: 'IMG',
-};
 
 /**
  * Centro operativo del expediente: línea de tiempo, documentos y kanban.
@@ -35,7 +24,8 @@ const EXT_MAP: Record<string, FileType> = {
 @Component({
   selector: 'app-case-detail-modal',
   standalone: true,
-  imports: [ModalComponent, IconComponent, StatusChipComponent, PriorityChipComponent, CaseKanbanComponent],
+  imports: [ModalComponent, IconComponent, StatusChipComponent, PriorityChipComponent,
+            CaseKanbanComponent, CaseTimelineComponent],
   templateUrl: './case-detail-modal.component.html',
 })
 export class CaseDetailModalComponent {
@@ -59,14 +49,6 @@ export class CaseDetailModalComponent {
 
   readonly documents = computed(() =>
     this.catalog.documents().filter((d) => d.caseId === this.case.id));
-
-  /** Línea de tiempo del expediente desde la fuente central de actividad. */
-  readonly timeline = computed(() => {
-    this.activity.items(); // dependencia reactiva
-    return this.activity.byCase(this.case.id);
-  });
-
-  meta(tipo: CaseActivityType): { icon: any; color: string } { return ACTIVITY_META[tipo]; }
 
   // ---- Nueva observación ----
   readonly showNoteForm = signal(false);
@@ -96,12 +78,10 @@ export class CaseDetailModalComponent {
     const file = input.files?.[0];
     if (!file) return;
     const autor = this.auth.user()?.nombre ?? 'Abogado';
-    const ext = EXT_MAP[file.name.split('.').pop()?.toLowerCase() ?? ''] ?? 'OTRO';
-    const size = file.size >= 1_048_576
-      ? (file.size / 1_048_576).toFixed(1) + ' MB'
-      : Math.max(1, Math.round(file.size / 1024)) + ' KB';
-
-    this.catalog.addDocument({ name: file.name, ext, size, caseId: this.case.id, by: autor });
+    this.catalog.addDocument({
+      name: file.name, ext: fileExt(file.name), size: fileSize(file.size),
+      caseId: this.case.id, by: autor,
+    });
     this.activity.log({
       caseId: this.case.id, tipo: 'documento',
       titulo: 'Documento agregado al expediente', detalle: `"${file.name}"`, autor,

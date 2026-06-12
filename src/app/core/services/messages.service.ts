@@ -2,6 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { ChatMessage, Conversation, Role } from '../models';
 import { MOCK_CONVERSATIONS } from './mock-data';
 import { NotificationService } from './notification.service';
+import { fileExt, fileSize } from '../utils/file.util';
 
 /**
  * Mensajería Cliente ↔ Abogado. Mantiene las conversaciones, el historial,
@@ -46,6 +47,31 @@ export class MessagesService {
     // Demo sin backend: la contraparte responde y genera la notificación
     // que en producción produciría el mensaje entrante real.
     setTimeout(() => this.receiveReply(convId), 1400);
+  }
+
+  /** Envía un archivo adjunto (documento o imagen) en la conversación. */
+  sendFile(convId: string, file: File): void {
+    const msg: ChatMessage = {
+      id: 'msg-' + Date.now() + '-' + ++this.seq,
+      me: true,
+      text: '',
+      time: new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' }),
+      attachment: {
+        name: file.name,
+        size: fileSize(file.size),
+        ext: fileExt(file.name),
+        url: URL.createObjectURL(file),
+      },
+    };
+    this.appendMessage(convId, msg);
+
+    const conv = this._conversations().find((c) => c.id === convId);
+    this.notifs.push({
+      tipo: 'documento',
+      mensaje: `Archivo enviado a ${conv?.nombre ?? 'la conversación'}: ${file.name}`,
+      icon: 'doc',
+      route: '/app/messages',
+    });
   }
 
   private receiveReply(convId: string): void {

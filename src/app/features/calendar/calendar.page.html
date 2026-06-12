@@ -1,4 +1,4 @@
-<lex-page-head title="Calendario Legal" sub="Mayo 2026 · audiencias, reuniones y vencimientos"
+<lex-page-head title="Calendario Legal" sub="Audiencias, reuniones y vencimientos · 2026"
   [crumbs]="['LEGALCASE','Agenda','Calendario']">
   @if (canEdit()) {
     <button class="btn btn-gold btn-sm" (click)="openForm()">
@@ -8,6 +8,13 @@
 
 <div class="grid" style="grid-template-columns:1fr 300px;align-items:start">
   <lex-panel [noPad]="true">
+    <div class="cal-nav">
+      <button class="nav-btn" (click)="prevMonth()" title="Mes anterior">
+        <lex-icon name="chevR" [size]="16" style="transform:rotate(180deg)" /></button>
+      <b class="cal-month">{{ monthLabel() }}</b>
+      <button class="nav-btn" (click)="nextMonth()" title="Mes siguiente">
+        <lex-icon name="chevR" [size]="16" /></button>
+    </div>
     <div class="cal-grid head">@for (d of weekDays; track d) { <div class="wd">{{ d }}</div> }</div>
     <div class="cal-grid">
       @for (c of cells(); track $index) {
@@ -27,7 +34,7 @@
     @for (e of upcoming(); track e.id) {
       <div class="up"><span class="up-dot" [style.background]="e.color"></span>
         <div style="flex:1;min-width:0"><div class="up-t">{{ e.title }}</div>
-          <span class="muted" style="font-size:11.5px">{{ e.type }} · {{ e.day }} May · {{ e.time }}
+          <span class="muted" style="font-size:11.5px">{{ e.day }} {{ monthShort(e.month) }} · {{ e.time }}
             @if (e.caseId) { · <b class="case-id" style="font-size:10.5px">{{ e.caseId }}</b> }</span></div>
         @if (canEdit()) {
           <button class="ev-x" title="Eliminar" (click)="remove(e)"><lex-icon name="x" [size]="13" /></button>
@@ -42,6 +49,10 @@
 }
 
 <style>
+  .cal-nav{display:flex;align-items:center;justify-content:center;gap:14px;padding:12px;border-bottom:1px solid var(--line)}
+  .cal-month{font-family:'Fraunces';font-size:16px;min-width:150px;text-align:center}
+  .nav-btn{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:var(--ink-2)}
+  .nav-btn:hover{background:var(--surface-3)}
   .cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
   .cal-grid.head .wd{padding:11px;text-align:center;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;border-bottom:1px solid var(--line)}
   .cell{min-height:92px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px;font-size:11px}

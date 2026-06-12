@@ -2,8 +2,7 @@ import { Component, EventEmitter, Output, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ModalComponent } from '@shared/components/modal/modal.component';
 import { CasesService } from '@core/services/cases.service';
-import { EventInput } from '@core/services/events.service';
-import { EventType } from '@core/models';
+import { EventInput, MONTHS_ES } from '@core/services/events.service';
 
 @Component({
   selector: 'app-event-form-modal',
@@ -18,20 +17,28 @@ export class EventFormModalComponent {
   private readonly fb = inject(FormBuilder);
   readonly cases = inject(CasesService).cases;
 
-  readonly types: EventType[] = ['Audiencia', 'Reunión', 'Vencimiento', 'Seguimiento'];
-  readonly days = Array.from({ length: 31 }, (_, i) => i + 1);
+  readonly months = MONTHS_ES;
 
   readonly form = this.fb.nonNullable.group({
     title: '',
-    type: 'Audiencia' as EventType,
+    month: 5,
     day: 1,
     time: '09:00',
     caseId: '',
   });
 
+  /** Días válidos del mes seleccionado (año 2026). */
+  days(): number[] {
+    const m = Number(this.form.controls.month.value);
+    const total = new Date(2026, m, 0).getDate();
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
   submit(): void {
     const v = this.form.getRawValue();
     if (!v.title.trim()) return;
-    this.save.emit({ ...v, day: Number(v.day), title: v.title.trim() });
+    const month = Number(v.month);
+    const day = Math.min(Number(v.day), this.days().length);
+    this.save.emit({ title: v.title.trim(), month, day, time: v.time, caseId: v.caseId });
   }
 }

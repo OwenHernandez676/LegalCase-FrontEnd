@@ -14,10 +14,9 @@ const NAV: NavItem[] = [
   { label: 'Dashboard', icon: 'dashboard', path: 'dashboard', roles: ['administrador', 'abogado', 'cliente'] },
   { label: 'Solicitudes', icon: 'inbox', path: 'requests', roles: ['administrador'] },
   { label: 'Expedientes', icon: 'folder', path: 'cases', roles: ['administrador', 'abogado'] },
-  { label: 'Calendario', icon: 'cal', path: 'calendar', roles: ['abogado', 'cliente'] },
+  { label: 'Calendario', icon: 'cal', path: 'calendar', roles: ['abogado'] },
   { label: 'Abogados', icon: 'users', path: 'users', roles: ['administrador'] },
   { label: 'Mensajes', icon: 'msg', path: 'messages', roles: ['abogado', 'cliente'] },
-  { label: 'Configuración', icon: 'settings', path: 'settings', roles: ['cliente'] },
 ];
 
 /** Ruta de respaldo por tipo cuando la notificación no trae ruta propia. */
