@@ -6,6 +6,7 @@ import { ChipComponent } from '@shared/components/chip/chip.component';
 import { ModalComponent } from '@shared/components/modal/modal.component';
 import { CatalogService, LawyerInput } from '@core/services/catalog.service';
 import { ToastService } from '@shared/components/toast/toast.service';
+import { apiErrorMessage } from '@core/utils/http-error.util';
 import { User } from '@core/models';
 import { LawyerFormModalComponent } from './components/lawyer-form-modal/lawyer-form-modal.component';
 
@@ -23,6 +24,8 @@ export class UsersPage {
   readonly showForm = signal(false);
   readonly editing = signal<User | null>(null);
   readonly viewing = signal<User | null>(null);
+  /** En curso un POST/PATCH: deshabilita el botón de guardar del modal. */
+  readonly saving = signal(false);
 
   openNew(): void { this.editing.set(null); this.showForm.set(true); }
   openEdit(l: User): void { this.editing.set(l); this.showForm.set(true); }
@@ -32,23 +35,43 @@ export class UsersPage {
   closeView(): void { this.viewing.set(null); }
 
   onSave(data: LawyerInput): void {
+    if (this.saving()) return;
     const current = this.editing();
-    if (current) {
-      this.catalog.updateLawyer(current.id, data);
-      this.toast.show({ title: 'Abogado actualizado correctamente', tone: 'success' });
-    } else {
-      this.catalog.addLawyer(data);
-      this.toast.show({ title: 'Abogado guardado correctamente', tone: 'success' });
-    }
-    this.closeForm();
+    const op$ = current
+      ? this.catalog.updateLawyer(current.id, data)
+      : this.catalog.addLawyer(data);
+
+    this.saving.set(true);
+    op$.subscribe({
+      // Éxito solo tras respuesta 2xx del backend.
+      next: () => {
+        this.saving.set(false);
+        this.toast.show({
+          title: current ? 'Abogado actualizado correctamente' : 'Abogado guardado correctamente',
+          tone: 'success',
+        });
+        this.closeForm();
+      },
+      // 400/401/403/404/409/500: muestra el mensaje real de la API y conserva el formulario abierto.
+      error: (err) => {
+        this.saving.set(false);
+        this.toast.show({ title: 'No se pudo guardar el abogado', msg: apiErrorMessage(err), tone: 'warn' });
+      },
+    });
   }
 
   toggleActive(l: User): void {
-    this.catalog.setLawyerActive(l.id, !l.activo);
-    this.toast.show({
-      title: l.activo ? 'Abogado inhabilitado' : 'Abogado rehabilitado',
-      msg: l.nombre,
-      tone: l.activo ? 'warn' : 'success',
+    const willBeActive = !l.activo;
+    this.catalog.setLawyerActive(l.id, willBeActive).subscribe({
+      next: () => this.toast.show({
+        title: willBeActive ? 'Abogado rehabilitado' : 'Abogado inhabilitado',
+        msg: l.nombre,
+        tone: willBeActive ? 'success' : 'warn',
+      }),
+      error: (err) => {
+        this.catalog.loadLawyers(); // revierte el cambio optimista desde la BD
+        this.toast.show({ title: 'No se pudo cambiar el estado', msg: apiErrorMessage(err), tone: 'warn' });
+      },
     });
   }
 }

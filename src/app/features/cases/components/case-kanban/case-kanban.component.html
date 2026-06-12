@@ -20,7 +20,7 @@
             (dragstart)="onDragCase()" (dragend)="onDragEnd()">
             <div class="kb-top" [style.background]="col.color"></div>
             <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:7px">
-              <span class="case-id">{{ c.id }}</span>
+              <span class="case-id">{{ c.codigo || c.id }}</span>
               <lex-priority-chip [priority]="c.prioridad" />
             </div>
             <div class="kb-title">{{ c.titulo }}</div>

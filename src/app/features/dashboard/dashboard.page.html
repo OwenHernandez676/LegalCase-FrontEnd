@@ -57,7 +57,7 @@
         <thead><tr><th>ID</th><th>Cliente</th><th>Tipo</th><th>Prioridad</th><th>Estado</th></tr></thead>
         <tbody>
           @for (r of recentRequests(); track r.id) {
-            <tr><td><span class="case-id">{{ r.id }}</span></td>
+            <tr><td><span class="case-id">{{ r.codigo || r.id }}</span></td>
               <td><div class="user-cell"><lex-avatar [name]="r.cliente" [size]="30" /><b>{{ r.cliente }}</b></div></td>
               <td>{{ r.tipo }}</td><td><lex-priority-chip [priority]="r.prioridad" /></td>
               <td><lex-chip [label]="r.estado" [kind]="reqChipKind(r.estado)" /></td></tr>
@@ -88,7 +88,7 @@
         <div class="case-row">
           <div class="bar" [style.background]="'var(--gold)'"></div>
           <div style="flex:1;min-width:0">
-            <div class="row" style="gap:8px;align-items:center"><span class="case-id">{{ c.id }}</span>
+            <div class="row" style="gap:8px;align-items:center"><span class="case-id">{{ c.codigo || c.id }}</span>
               <lex-status-chip [status]="c.estado" /></div>
             <div class="ct">{{ c.titulo }}</div>
           </div>

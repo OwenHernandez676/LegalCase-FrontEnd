@@ -56,6 +56,9 @@ export class CaseDetailModalComponent {
 
   toggleNoteForm(): void { this.showNoteForm.update((v) => !v); this.note = ''; }
 
+  /** Código visible del expediente (EXP-####) para mensajes y avisos. */
+  private get codigo(): string { return this.case.codigo ?? this.case.id; }
+
   saveNote(): void {
     const text = this.note.trim();
     if (!text) return;
@@ -66,10 +69,10 @@ export class CaseDetailModalComponent {
     });
     this.notifs.push({
       tipo: 'comentario',
-      mensaje: `${autor} agregó una actualización en ${this.case.id}`,
+      mensaje: `${autor} agregó una actualización en ${this.codigo}`,
       icon: 'msg', route: '/app/cases',
     });
-    this.toast.show({ title: 'Actualización registrada', msg: this.case.id, tone: 'success' });
+    this.toast.show({ title: 'Actualización registrada', msg: this.codigo, tone: 'success' });
     this.toggleNoteForm();
   }
 
@@ -88,7 +91,7 @@ export class CaseDetailModalComponent {
     });
     this.notifs.push({
       tipo: 'documento',
-      mensaje: `${autor} subió "${file.name}" a ${this.case.id}`,
+      mensaje: `${autor} subió "${file.name}" a ${this.codigo}`,
       icon: 'doc', route: '/app/cases',
     });
     this.toast.show({ title: 'Documento subido', msg: file.name, tone: 'success' });

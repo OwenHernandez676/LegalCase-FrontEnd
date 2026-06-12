@@ -59,6 +59,7 @@ export class CaseKanbanComponent {
     const c = this.liveCase();
     if (!c || c.estado === status) return;
     const prev = c.estado;
+    const codigo = c.codigo ?? c.id;
     this.cases.updateStatus(c.id, status);
     this.activity.log({
       caseId: c.id, tipo: 'estado',
@@ -68,9 +69,9 @@ export class CaseKanbanComponent {
     });
     this.notifs.push({
       tipo: 'estado',
-      mensaje: `${c.id} pasó de ${prev} a ${status}`,
+      mensaje: `${codigo} pasó de ${prev} a ${status}`,
       icon: 'flag', route: '/app/cases',
     });
-    this.toast.show({ title: 'Estado actualizado', msg: `${c.id} → ${status}`, tone: 'gold' });
+    this.toast.show({ title: 'Estado actualizado', msg: `${codigo} → ${status}`, tone: 'gold' });
   }
 }

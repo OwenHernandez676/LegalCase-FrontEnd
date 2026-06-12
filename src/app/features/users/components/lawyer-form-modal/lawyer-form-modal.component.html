@@ -3,19 +3,25 @@
   [sub]="isEdit ? (lawyer?.nombre || '') : 'Registre un nuevo integrante del equipo legal'"
   (close)="close.emit()">
 
-  <form [formGroup]="form">
+  <form [formGroup]="form" (ngSubmit)="submit()">
     <div class="field">
       <label>Nombre completo <span class="req">*</span></label>
-      <input class="input" type="text" formControlName="nombre" placeholder="Ej. Dra. Mariela Fonseca" />
+      <input class="input" type="text" formControlName="nombre" placeholder="Ej. Dra. Mariela Fonseca"
+        [class.invalid]="invalid('nombre')" />
+      @if (invalid('nombre')) { <span class="err">Ingrese un nombre de al menos 3 caracteres.</span> }
     </div>
     <div class="field-row">
       <div class="field">
         <label>Correo electrónico <span class="req">*</span></label>
-        <input class="input" type="email" formControlName="correo" placeholder="correo@legalcase.hn" />
+        <input class="input" type="email" formControlName="correo" placeholder="correo@legalcase.hn"
+          [class.invalid]="invalid('correo')" />
+        @if (invalid('correo')) { <span class="err">Ingrese un correo electrónico válido.</span> }
       </div>
       <div class="field">
         <label>Teléfono <span class="req">*</span></label>
-        <input class="input" type="tel" formControlName="telefono" placeholder="+504 0000-0000" />
+        <input class="input" type="tel" formControlName="telefono" placeholder="+504 0000-0000"
+          [class.invalid]="invalid('telefono')" />
+        @if (invalid('telefono')) { <span class="err">El teléfono debe tener al menos 8 caracteres.</span> }
       </div>
     </div>
     <div class="field-row">
@@ -38,7 +44,14 @@
   </form>
 
   <div footer class="m-foot">
-    <button class="btn btn-ghost" type="button" (click)="close.emit()">Cancelar</button>
-    <button class="btn btn-gold" type="button" (click)="submit()">Guardar abogado</button>
+    <button class="btn btn-ghost" type="button" (click)="close.emit()" [disabled]="saving">Cancelar</button>
+    <button class="btn btn-gold" type="button" (click)="submit()" [disabled]="saving">
+      {{ saving ? 'Guardando…' : 'Guardar abogado' }}
+    </button>
   </div>
+
+  <style>
+    .input.invalid{border-color:var(--danger,#BB4138)}
+    .err{display:block;margin-top:5px;font-size:11.5px;color:var(--danger,#BB4138);font-weight:600}
+  </style>
 </lex-modal>

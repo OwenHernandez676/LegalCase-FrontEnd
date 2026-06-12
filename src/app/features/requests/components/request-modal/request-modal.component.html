@@ -13,15 +13,21 @@
     @if (step === 1) {
       <div class="field">
         <label>Nombre completo <span class="req">*</span></label>
-        <input class="input" type="text" formControlName="cliente" placeholder="Ej. María Fernández" />
+        <input class="input" type="text" formControlName="cliente" placeholder="Ej. María Fernández"
+          [class.invalid]="invalid('cliente')" />
+        @if (invalid('cliente')) { <span class="err">Ingrese su nombre (al menos 3 caracteres).</span> }
       </div>
       <div class="field">
         <label>Correo electrónico <span class="req">*</span></label>
-        <input class="input" type="email" formControlName="correo" placeholder="correo@ejemplo.com" />
+        <input class="input" type="email" formControlName="correo" placeholder="correo@ejemplo.com"
+          [class.invalid]="invalid('correo')" />
+        @if (invalid('correo')) { <span class="err">Ingrese un correo electrónico válido.</span> }
       </div>
       <div class="field">
         <label>Teléfono <span class="req">*</span></label>
-        <input class="input" type="tel" formControlName="telefono" placeholder="+504 0000-0000" />
+        <input class="input" type="tel" formControlName="telefono" placeholder="+504 0000-0000"
+          [class.invalid]="invalid('telefono')" />
+        @if (invalid('telefono')) { <span class="err">El teléfono debe tener al menos 8 caracteres.</span> }
       </div>
     } @else {
       <div class="field-row">
@@ -44,7 +50,10 @@
       </div>
       <div class="field">
         <label>Descripción <span class="req">*</span></label>
-        <textarea class="textarea" rows="4" formControlName="descripcion" placeholder="Describa brevemente su situación legal"></textarea>
+        <textarea class="textarea" rows="4" formControlName="descripcion"
+          placeholder="Describa brevemente su situación legal (mínimo 20 caracteres)"
+          [class.invalid]="invalid('descripcion')"></textarea>
+        @if (invalid('descripcion')) { <span class="err">La descripción debe tener al menos 20 caracteres.</span> }
       </div>
     }
   </form>
@@ -54,8 +63,15 @@
       <button class="btn btn-ghost" type="button" (click)="close.emit()">Cancelar</button>
       <button class="btn btn-gold" type="button" (click)="nextStep()">Continuar</button>
     } @else {
-      <button class="btn btn-ghost" type="button" (click)="previousStep()">Atrás</button>
-      <button class="btn btn-gold" type="button" (click)="submit()">Enviar solicitud</button>
+      <button class="btn btn-ghost" type="button" (click)="previousStep()" [disabled]="sending()">Atrás</button>
+      <button class="btn btn-gold" type="button" (click)="submit()" [disabled]="sending()">
+        {{ sending() ? 'Enviando…' : 'Enviar solicitud' }}
+      </button>
     }
   </div>
+
+  <style>
+    .input.invalid,.textarea.invalid{border-color:var(--danger,#BB4138)}
+    .err{display:block;margin-top:5px;font-size:11.5px;color:var(--danger,#BB4138);font-weight:600}
+  </style>
 </lex-modal>

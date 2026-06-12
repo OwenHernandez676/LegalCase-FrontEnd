@@ -53,14 +53,14 @@ export class RequestsPage {
     this.svc.resolve(req.id, 'Aprobada');
     this.toast.show({
       title: 'Expediente creado correctamente',
-      msg: req.id + ' · ' + result.lawyerName,
+      msg: (req.codigo ?? req.id) + ' · ' + result.lawyerName,
       tone: 'success',
     });
     this.closeApprove();
   }
 
-  reject(id: string): void {
-    this.svc.resolve(id, 'Rechazada');
-    this.toast.show({ title: 'Solicitud rechazada', msg: id, tone: 'warn' });
+  reject(r: LegalRequest): void {
+    this.svc.resolve(r.id, 'Rechazada');
+    this.toast.show({ title: 'Solicitud rechazada', msg: r.codigo ?? r.id, tone: 'warn' });
   }
 }

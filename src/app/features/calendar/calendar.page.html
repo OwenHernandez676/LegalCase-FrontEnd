@@ -35,7 +35,7 @@
       <div class="up"><span class="up-dot" [style.background]="e.color"></span>
         <div style="flex:1;min-width:0"><div class="up-t">{{ e.title }}</div>
           <span class="muted" style="font-size:11.5px">{{ e.day }} {{ monthShort(e.month) }} · {{ e.time }}
-            @if (e.caseId) { · <b class="case-id" style="font-size:10.5px">{{ e.caseId }}</b> }</span></div>
+            @if (e.caseId) { · <b class="case-id" style="font-size:10.5px">{{ caseCode(e.caseId) }}</b> }</span></div>
         @if (canEdit()) {
           <button class="ev-x" title="Eliminar" (click)="remove(e)"><lex-icon name="x" [size]="13" /></button>
         }

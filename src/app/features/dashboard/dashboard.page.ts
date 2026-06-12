@@ -14,8 +14,15 @@ import { RequestsService } from '@core/services/requests.service';
 import { CatalogService } from '@core/services/catalog.service';
 import { EventsService, monthShort } from '@core/services/events.service';
 import { MessagesService } from '@core/services/messages.service';
-import { Priority, RequestStatus } from '@core/models';
+import { LegalCase, Priority, RequestStatus } from '@core/models';
 import { CaseTimelineComponent } from '@features/cases/components/case-timeline/case-timeline.component';
+
+/** Respaldo visual mientras cargan los expedientes del backend. */
+const EMPTY_CASE: LegalCase = {
+  id: '', codigo: '—', titulo: 'Sin expediente asignado', cliente: '', abogado: 'Sin asignar',
+  tipo: 'Otro', estado: 'Pendiente', prioridad: 'Baja', progreso: 0, docs: 0,
+  opened: '—', due: '—', next: '—',
+};
 
 const PRIORITY_DEFS: { label: Priority; color: string }[] = [
   { label: 'Crítica', color: '#6B5599' },
@@ -49,7 +56,12 @@ export class DashboardPage {
   readonly events = this.eventsSvc.upcoming;
 
   // ---- Portal del cliente ----
-  readonly clientCase = computed(() => this.cases.cases()[1]);
+  /** Expediente del cliente autenticado (por nombre); nunca lanza con lista vacía. */
+  readonly clientCase = computed<LegalCase>(() => {
+    const all = this.cases.cases();
+    const me = this.auth.user()?.nombre ?? '';
+    return all.find((c) => c.cliente === me) ?? all[0] ?? EMPTY_CASE;
+  });
   /** Documentos compartidos por el abogado en el caso del cliente. */
   readonly clientDocs = computed(() =>
     this.catalog.documents().filter((d) => d.caseId === this.clientCase().id));
@@ -69,7 +81,11 @@ export class DashboardPage {
   monthShort(m: number): string { return monthShort(m); }
 
   /** Abogados activos con su carga de casos, para el panel "Ocupación de abogados". */
-  readonly lawyerLoad = computed(() => this.catalog.activeLawyers());
+  readonly lawyerLoad = computed(() =>
+    this.catalog.activeLawyers().map((l) => ({
+      ...l,
+      casos: this.cases.cases().filter((c) => c.abogado === l.nombre).length,
+    })));
 
   /** Color de chip para el estado de una solicitud (no de un caso). */
   reqChipKind(estado: RequestStatus): 'c-gray' | 'c-green' | 'c-red' {
