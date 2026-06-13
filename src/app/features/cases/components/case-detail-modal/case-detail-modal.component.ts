@@ -43,6 +43,13 @@ export class CaseDetailModalComponent {
   readonly tab = signal<Tab>('timeline');
   setTab(t: Tab): void { this.tab.set(t); }
 
+  /**
+   * Solo el abogado puede operar el expediente: agregar actualizaciones a la
+   * línea de tiempo, subir documentos y usar el tablero Kanban. El administrador
+   * y el cliente lo ven en modo lectura.
+   */
+  readonly isLawyer = computed(() => this.auth.role() === 'abogado');
+
   /** Estado leído en vivo: el kanban puede cambiarlo mientras el modal está abierto. */
   readonly liveCase = computed(() =>
     this.cases.cases().find((c) => c.id === this.case.id) ?? this.case);

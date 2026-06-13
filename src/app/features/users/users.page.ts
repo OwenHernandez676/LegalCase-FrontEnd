@@ -1,10 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { PageHeadComponent } from '@shared/components/page-head/page-head.component';
 import { AvatarComponent } from '@shared/components/avatar/avatar.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { ChipComponent } from '@shared/components/chip/chip.component';
 import { ModalComponent } from '@shared/components/modal/modal.component';
 import { CatalogService, LawyerInput } from '@core/services/catalog.service';
+import { CasesService } from '@core/services/cases.service';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { apiErrorMessage } from '@core/utils/http-error.util';
 import { User } from '@core/models';
@@ -18,8 +19,18 @@ import { LawyerFormModalComponent } from './components/lawyer-form-modal/lawyer-
 })
 export class UsersPage {
   private readonly catalog = inject(CatalogService);
+  private readonly cases = inject(CasesService);
   private readonly toast = inject(ToastService);
-  readonly lawyers = this.catalog.lawyers;
+
+  /**
+   * Abogados con su número de casos activos calculado en vivo desde el store
+   * de expedientes: al asignar/finalizar un caso la tarjeta se actualiza sola.
+   */
+  readonly lawyers = computed(() =>
+    this.catalog.lawyers().map((l) => ({
+      ...l,
+      casos: this.cases.cases().filter((c) => c.abogado === l.nombre && c.estado !== 'Finalizado').length,
+    })));
 
   readonly showForm = signal(false);
   readonly editing = signal<User | null>(null);

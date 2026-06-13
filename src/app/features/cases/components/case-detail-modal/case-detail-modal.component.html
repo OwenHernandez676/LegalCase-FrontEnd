@@ -1,10 +1,9 @@
 <lex-modal [title]="case.titulo" [sub]="(case.codigo || case.id) + ' · ' + case.cliente" [lg]="true" (close)="close.emit()">
 
   <div class="cd-head">
-    <div class="cd-meta"><span class="muted">Cliente</span><b>{{ case.cliente }}</b></div>
-    <div class="cd-meta"><span class="muted">Abogado</span><b>{{ case.abogado }}</b></div>
-    <div class="cd-meta"><span class="muted">Apertura</span><b>{{ case.opened }}</b></div>
-    <div class="cd-meta"><span class="muted">Vencimiento</span><b>{{ case.due }}</b></div>
+    <div class="cd-meta"><span class="muted">Cliente</span><b>{{ liveCase().cliente }}</b></div>
+    <div class="cd-meta"><span class="muted">Abogado</span><b>{{ liveCase().abogado }}</b></div>
+    <div class="cd-meta"><span class="muted">Apertura</span><b>{{ liveCase().opened }}</b></div>
     <div class="cd-chips">
       <lex-status-chip [status]="liveCase().estado" />
       <lex-priority-chip [priority]="liveCase().prioridad" />
@@ -14,12 +13,14 @@
   <div class="tabs">
     <button [class.on]="tab() === 'timeline'" (click)="setTab('timeline')">Línea de tiempo</button>
     <button [class.on]="tab() === 'docs'" (click)="setTab('docs')">Documentos</button>
-    <button [class.on]="tab() === 'kanban'" (click)="setTab('kanban')">Kanban</button>
+    @if (isLawyer()) {
+      <button [class.on]="tab() === 'kanban'" (click)="setTab('kanban')">Kanban</button>
+    }
   </div>
 
   <!-- ===== Línea de tiempo ===== -->
   @if (tab() === 'timeline') {
-    @if (editable) {
+    @if (isLawyer()) {
       <div class="note-bar">
         @if (!showNoteForm()) {
           <button class="btn btn-gold btn-sm" (click)="toggleNoteForm()">
@@ -43,7 +44,7 @@
 
   <!-- ===== Documentos ===== -->
   @if (tab() === 'docs') {
-    @if (editable) {
+    @if (isLawyer()) {
       <div class="note-bar">
         <input type="file" hidden #fileInput accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.webp"
           (change)="onFileSelected(fileInput)" />
@@ -69,8 +70,8 @@
     }
   }
 
-  <!-- ===== Kanban del expediente ===== -->
-  @if (tab() === 'kanban') {
+  <!-- ===== Kanban del expediente (solo abogado) ===== -->
+  @if (tab() === 'kanban' && isLawyer()) {
     <app-case-kanban [caseId]="case.id" [editable]="editable" />
   }
 

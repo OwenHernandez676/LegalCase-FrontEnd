@@ -6,6 +6,7 @@ import { IconComponent } from '@shared/components/icon/icon.component';
 import { StatusChipComponent } from '@shared/components/status-chip/status-chip.component';
 import { PriorityChipComponent } from '@shared/components/priority-chip/priority-chip.component';
 import { CasesService } from '@core/services/cases.service';
+import { AuthStore } from '@core/store/auth.store';
 import { CaseStatus, LegalCase } from '@core/models';
 import { CaseDetailModalComponent } from './components/case-detail-modal/case-detail-modal.component';
 
@@ -18,6 +19,9 @@ import { CaseDetailModalComponent } from './components/case-detail-modal/case-de
 })
 export class CasesPage {
   private readonly svc = inject(CasesService);
+  private readonly auth = inject(AuthStore);
+  /** El administrador no ve la columna de estado en el listado de expedientes. */
+  readonly isAdmin = computed(() => this.auth.role() === 'administrador');
   readonly statuses: (CaseStatus | 'Todos')[] = ['Todos', 'Pendiente', 'En proceso', 'En revisión', 'Finalizado'];
   readonly status = signal<CaseStatus | 'Todos'>('Todos');
   readonly query = signal('');
