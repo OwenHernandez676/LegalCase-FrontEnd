@@ -1,7 +1,31 @@
-@if (!editable) {
-  <p class="kb-hint muted">Vista de progreso del expediente. Su abogado actualiza el estado del caso.</p>
+@if (editable) {
+  <div class="kb-bar">
+    <p class="kb-hint muted">Arrastre las tarjetas entre columnas para cambiar su estado.</p>
+    <button class="btn btn-gold btn-sm" (click)="openNew()"><lex-icon name="plus" [size]="14" /> Nueva tarea</button>
+  </div>
+
+  @if (showForm()) {
+    <div class="kb-form">
+      <input class="input" placeholder="Título de la tarea" [value]="form.titulo" #ft (input)="form.titulo = ft.value" />
+      <textarea class="textarea" rows="2" placeholder="Descripción (opcional)" [value]="form.descripcion || ''" #fd (input)="form.descripcion = fd.value"></textarea>
+      <div class="kb-form-row">
+        <label>Prioridad
+          <select class="input" #fp (change)="form.prioridad = $any(fp.value)">
+            @for (p of priorities; track p) { <option [value]="p" [selected]="form.prioridad === p">{{ p }}</option> }
+          </select>
+        </label>
+        <label>Fecha límite
+          <input class="input" type="date" [value]="form.fechaLimite || ''" #ff (input)="form.fechaLimite = ff.value" />
+        </label>
+      </div>
+      <div class="row" style="justify-content:flex-end;gap:8px">
+        <button class="btn btn-ghost btn-sm" (click)="cancelForm()">Cancelar</button>
+        <button class="btn btn-gold btn-sm" (click)="save()">{{ editingId() ? 'Guardar cambios' : 'Crear tarea' }}</button>
+      </div>
+    </div>
+  }
 } @else {
-  <p class="kb-hint muted">Arrastre la tarjeta dorada entre columnas para actualizar el estado del expediente.</p>
+  <p class="kb-hint muted">Avance de su expediente. Las tareas las gestiona su abogado.</p>
 }
 
 <div class="kb-cols">
@@ -11,26 +35,30 @@
       <div class="kb-head">
         <span class="kb-dot" [style.background]="col.color"></span>
         <b>{{ col.key }}</b>
-        <span class="kb-count">{{ liveCase()?.estado === col.key ? 1 : 0 }}</span>
+        <span class="kb-count">{{ byCol(col.key).length }}</span>
       </div>
 
-      @if (liveCase(); as c) {
-        @if (c.estado === col.key) {
-          <div class="kb-card case" [class.grab]="editable" [attr.draggable]="editable"
-            (dragstart)="onDragCase()" (dragend)="onDragEnd()">
-            <div class="kb-top" [style.background]="col.color"></div>
-            <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:7px">
-              <span class="case-id">{{ c.codigo || c.id }}</span>
-              <lex-priority-chip [priority]="c.prioridad" />
-            </div>
-            <div class="kb-title">{{ c.titulo }}</div>
-            <div class="kb-foot">
-              <div class="user-cell"><lex-avatar [name]="c.abogado" [size]="22" />
-                <span>{{ c.abogado }}</span></div>
-              <span class="muted"><lex-icon name="clock" [size]="12" /> {{ c.due }}</span>
-            </div>
+      @for (t of byCol(col.key); track t.id) {
+        <div class="kb-card" [class.grab]="editable" [attr.draggable]="editable"
+          (dragstart)="onDragStart(t.id)" (dragend)="onDragEnd()">
+          <div class="kb-top" [style.background]="col.color"></div>
+          <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px">
+            <lex-priority-chip [priority]="t.prioridad" />
+            @if (editable) {
+              <div class="kb-acts">
+                <button title="Editar" (click)="openEdit(t)"><lex-icon name="doc" [size]="13" /></button>
+                <button title="Eliminar" (click)="remove(t)"><lex-icon name="x" [size]="13" /></button>
+              </div>
+            }
           </div>
-        }
+          <div class="kb-title">{{ t.titulo }}</div>
+          @if (t.descripcion) { <div class="kb-desc">{{ t.descripcion }}</div> }
+          @if (fmtDate(t.fechaLimite)) {
+            <div class="kb-foot"><span class="muted"><lex-icon name="clock" [size]="12" /> {{ fmtDate(t.fechaLimite) }}</span></div>
+          }
+        </div>
+      } @empty {
+        <p class="kb-empty muted">Sin tareas</p>
       }
     </div>
   }

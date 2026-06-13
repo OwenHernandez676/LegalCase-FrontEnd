@@ -1,6 +1,6 @@
 import {
   AppNotification, CalendarEvent, CaseActivity, CaseActivityType, CaseStatus, CaseType,
-  ChatMessage, EventType, FileType, LegalCase, LegalDocument, LegalRequest,
+  ChatMessage, EventType, FileType, LegalCase, LegalDocument, LegalRequest, LegalTask,
   NotificationType, Priority, RequestStatus, Role, User,
 } from '../models';
 
@@ -32,6 +32,12 @@ export interface ApiUser {
 export interface ApiDocument {
   id: string; nombre: string; tipo: 'PDF' | 'DOCX' | 'XLSX'; tamano: string;
   expedienteId: string; subidoPor: string; createdAt?: string;
+}
+
+export interface ApiTask {
+  id: string; titulo: string; descripcion: string; prioridad: Priority;
+  fechaLimite: string | null; estado: CaseStatus; expedienteId: string; abogadoId: string;
+  createdAt?: string; updatedAt?: string;
 }
 
 export interface ApiEvent {
@@ -134,6 +140,19 @@ export function mapUser(dto: ApiUser): User {
     especialidad: dto.especialidad,
     cargaTrabajo: dto.cargaTrabajo,
     activo: dto.activo,
+  };
+}
+
+export function mapTask(dto: ApiTask): LegalTask {
+  return {
+    id: dto.id,
+    titulo: dto.titulo,
+    descripcion: dto.descripcion ?? '',
+    prioridad: dto.prioridad,
+    fechaLimite: dto.fechaLimite ?? '',
+    estado: dto.estado,
+    expedienteId: dto.expedienteId,
+    abogadoId: dto.abogadoId,
   };
 }
 

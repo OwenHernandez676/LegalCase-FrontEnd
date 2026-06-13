@@ -54,9 +54,12 @@ export class RequestsPage {
   onCreateExpediente(result: AssignResult): void {
     const req = this.approving();
     if (!req) return;
-    // Envía el abogado y la prioridad: el backend crea la cuenta del cliente,
-    // el expediente asignado y envía el correo de bienvenida con sus credenciales.
-    this.svc.resolve(req.id, 'Aprobada', { abogado: result.lawyerName, prioridad: result.prioridad });
+    // Envía abogado (nombre+id), prioridad y observaciones: el backend crea la
+    // cuenta del cliente, el expediente asignado y envía el correo de bienvenida.
+    this.svc.resolve(req.id, 'Aprobada', {
+      abogado: result.lawyerName, abogadoId: result.lawyerId,
+      prioridad: result.prioridad, observaciones: result.observaciones,
+    });
     this.toast.show({
       title: 'Solicitud aprobada',
       msg: `Cuenta de cliente creada y credenciales enviadas a ${req.correo}`,

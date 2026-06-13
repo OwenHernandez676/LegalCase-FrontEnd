@@ -32,6 +32,11 @@
     }
   </div>
 
+  <div class="sec-lbl">Observaciones <span class="muted" style="font-weight:500">(opcional)</span></div>
+  <textarea class="textarea" rows="3" style="width:100%" #obs
+    placeholder="Notas o instrucciones para el abogado al abrir el expediente…"
+    (input)="observaciones = obs.value"></textarea>
+
   <div footer class="m-foot">
     <button class="btn btn-ghost" type="button" (click)="close.emit()">Cancelar</button>
     <button class="btn btn-gold" type="button" [disabled]="!selectedLawyer()" (click)="submit()">Crear expediente</button>

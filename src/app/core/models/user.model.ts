@@ -22,5 +22,4 @@ export interface AuthSession {
 export interface LoginCredentials {
   correo: string;
   contrasena: string;
-  rol: Role;
 }

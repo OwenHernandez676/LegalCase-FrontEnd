@@ -13,9 +13,7 @@
   <div class="tabs">
     <button [class.on]="tab() === 'timeline'" (click)="setTab('timeline')">Línea de tiempo</button>
     <button [class.on]="tab() === 'docs'" (click)="setTab('docs')">Documentos</button>
-    @if (isLawyer()) {
-      <button [class.on]="tab() === 'kanban'" (click)="setTab('kanban')">Kanban</button>
-    }
+    <button [class.on]="tab() === 'kanban'" (click)="setTab('kanban')">Tareas</button>
   </div>
 
   <!-- ===== Línea de tiempo ===== -->
@@ -70,9 +68,9 @@
     }
   }
 
-  <!-- ===== Kanban del expediente (solo abogado) ===== -->
-  @if (tab() === 'kanban' && isLawyer()) {
-    <app-case-kanban [caseId]="case.id" [editable]="editable" />
+  <!-- ===== Tareas (Kanban): abogado opera; cliente/admin solo lectura ===== -->
+  @if (tab() === 'kanban') {
+    <app-case-kanban [caseId]="case.id" [editable]="isLawyer()" />
   }
 
   <style>
