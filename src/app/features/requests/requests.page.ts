@@ -50,7 +50,8 @@ export class RequestsPage {
   onCreateExpediente(result: AssignResult): void {
     const req = this.approving();
     if (!req) return;
-    this.svc.resolve(req.id, 'Aprobada');
+    // Envía el abogado y la prioridad seleccionados para que queden asignados al expediente.
+    this.svc.resolve(req.id, 'Aprobada', { abogado: result.lawyerName, prioridad: result.prioridad });
     this.toast.show({
       title: 'Expediente creado correctamente',
       msg: (req.codigo ?? req.id) + ' · ' + result.lawyerName,

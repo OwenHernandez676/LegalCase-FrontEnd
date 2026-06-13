@@ -55,12 +55,24 @@ export class RequestsService {
     );
   }
 
-  resolve(id: string, estado: RequestStatus): void {
+  /**
+   * Aprueba/rechaza una solicitud. Al aprobar, el abogado y la prioridad
+   * elegidos por el administrador se envían para que el backend los asigne al
+   * expediente creado (de lo contrario nacería "Sin asignar").
+   */
+  resolve(id: string, estado: RequestStatus, assign?: { abogado?: string; prioridad?: Priority }): void {
     // Optimista: el PATCH confirma; si se aprueba, el backend crea el expediente.
     this._requests.update((list) => list.map((r) => (r.id === id ? { ...r, estado } : r)));
-    this.api.patch<ApiRequest>(`requests/${id}/resolve`, { estado }).subscribe({
+    const body: Record<string, unknown> = { estado };
+    if (estado === 'Aprobada') {
+      if (assign?.abogado) body['abogado'] = assign.abogado;
+      if (assign?.prioridad) body['prioridad'] = assign.prioridad;
+    }
+    this.api.patch<ApiRequest>(`requests/${id}/resolve`, body).subscribe({
       next: (dto) => {
         this._requests.update((list) => list.map((r) => (r.id === dto.id ? mapRequest(dto) : r)));
+        // Recarga los expedientes para reflejar el nuevo caso y su abogado en
+        // listados, tarjetas de abogados y panel de ocupación (en vivo).
         if (dto.estado === 'Aprobada') this.cases.load();
       },
       error: () => this.load(),
