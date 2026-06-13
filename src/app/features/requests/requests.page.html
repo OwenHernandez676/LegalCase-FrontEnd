@@ -37,7 +37,7 @@
               <div class="row" style="gap:6px">
                 @if (r.estado === 'Pendiente') {
                   <button class="mini ok" title="Aprobar" (click)="openApprove(r)"><lex-icon name="check" [size]="14" /></button>
-                  <button class="mini no" title="Rechazar" (click)="reject(r)"><lex-icon name="x" [size]="14" /></button>
+                  <button class="mini no" title="Rechazar" (click)="openReject(r)"><lex-icon name="x" [size]="14" /></button>
                 }
                 <button class="mini" title="Ver detalle" (click)="openDetail(r)"><lex-icon name="eye" [size]="14" /></button>
               </div>
@@ -57,6 +57,21 @@
 }
 @if (approving(); as r) {
   <app-assign-lawyer-modal [request]="r" (close)="closeApprove()" (create)="onCreateExpediente($event)" />
+}
+@if (rejecting(); as r) {
+  <lex-modal title="Rechazar solicitud" [sub]="(r.codigo || r.id) + ' · ' + r.cliente" (close)="closeReject()">
+    <p class="muted" style="font-size:13px;margin-bottom:10px">
+      Puede registrar una observación del motivo del rechazo (opcional). Quedará en la trazabilidad de la solicitud.
+    </p>
+    <textarea class="textarea" rows="4" #motivoArea style="width:100%"
+      placeholder="Motivo u observaciones del rechazo…"
+      (input)="rejectMotivo = motivoArea.value"></textarea>
+    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:14px">
+      <button class="btn btn-ghost btn-sm" (click)="closeReject()">Cancelar</button>
+      <button class="btn btn-sm no" style="background:var(--danger-soft);color:var(--danger)" (click)="confirmReject()">
+        <lex-icon name="x" [size]="14" /> Rechazar solicitud</button>
+    </div>
+  </lex-modal>
 }
 
 <style>
