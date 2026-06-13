@@ -58,7 +58,8 @@ export class UsersPage {
       next: () => {
         this.saving.set(false);
         this.toast.show({
-          title: current ? 'Abogado actualizado correctamente' : 'Abogado guardado correctamente',
+          title: current ? 'Abogado actualizado correctamente' : 'Abogado creado correctamente',
+          msg: current ? undefined : `Credenciales de acceso enviadas a ${data.correo}`,
           tone: 'success',
         });
         this.closeForm();

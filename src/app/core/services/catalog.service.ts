@@ -14,12 +14,6 @@ export interface LawyerInput {
   activo: boolean;
 }
 
-/**
- * Contraseña inicial de los abogados creados desde el panel:
- * el backend exige contrasena en POST /api/users y el formulario no la pide.
- */
-const DEFAULT_LAWYER_PASSWORD = 'LegalCase#2026';
-
 /** Catálogos de apoyo (documentos, abogados) expuestos como signals. */
 @Injectable({ providedIn: 'root' })
 export class CatalogService {
@@ -77,13 +71,13 @@ export class CatalogService {
    * Alta de abogado. Devuelve el Observable para que la página reaccione al
    * resultado HTTP: en éxito actualiza la lista de forma optimista y refresca
    * desde el backend (refetch de seguridad); en error propaga para mostrar el
-   * mensaje real de la API. El backend exige contrasena en POST /api/users.
+   * mensaje real de la API. El backend genera una contraseña temporal segura y
+   * la envía al abogado por correo (onboarding), por lo que NO se envía aquí.
    */
   addLawyer(data: LawyerInput): Observable<User> {
     return this.api.post<ApiUser>('users', {
       nombre: data.nombre,
       correo: data.correo,
-      contrasena: DEFAULT_LAWYER_PASSWORD,
       rol: 'abogado',
       especialidad: data.especialidad,
       telefono: data.telefono,

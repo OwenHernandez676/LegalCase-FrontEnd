@@ -61,13 +61,16 @@ export class RequestsService {
    *   el expediente (asignado) y dispare el correo de bienvenida.
    * - Al RECHAZAR: envía el motivo (observaciones) que el backend persiste.
    */
-  resolve(id: string, estado: RequestStatus, opts?: { abogado?: string; prioridad?: Priority; motivo?: string }): void {
+  resolve(id: string, estado: RequestStatus,
+          opts?: { abogado?: string; abogadoId?: string; prioridad?: Priority; observaciones?: string; motivo?: string }): void {
     // Optimista: el PATCH confirma; si se aprueba, el backend crea el expediente.
     this._requests.update((list) => list.map((r) => (r.id === id ? { ...r, estado } : r)));
     const body: Record<string, unknown> = { estado };
     if (estado === 'Aprobada') {
       if (opts?.abogado) body['abogado'] = opts.abogado;
+      if (opts?.abogadoId) body['abogadoId'] = opts.abogadoId;
       if (opts?.prioridad) body['prioridad'] = opts.prioridad;
+      if (opts?.observaciones?.trim()) body['observaciones'] = opts.observaciones.trim();
     } else if (estado === 'Rechazada' && opts?.motivo?.trim()) {
       body['motivo'] = opts.motivo.trim();
     }

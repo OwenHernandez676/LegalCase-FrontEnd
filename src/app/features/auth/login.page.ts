@@ -3,7 +3,6 @@ import { Router, RouterLink } from '@angular/router';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { AuthService } from '@core/services/auth.service';
 import { ToastService } from '@shared/components/toast/toast.service';
-import { Role } from '@core/models';
 
 @Component({
   selector: 'lex-login',
@@ -17,27 +16,21 @@ export class LoginPage {
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
 
-  readonly roles: { id: Role; label: string; desc: string; icon: any }[] = [
-    { id: 'administrador', label: 'Administrador', desc: 'Gestión integral del despacho', icon: 'shield' },
-    { id: 'abogado', label: 'Abogado', desc: 'Casos, agenda y tareas', icon: 'briefcase' },
-    { id: 'cliente', label: 'Cliente', desc: 'Seguimiento de mi caso', icon: 'user' },
-  ];
-  readonly selectedRole = signal<Role>('administrador');
   readonly loading = signal(false);
   email = '';
   password = '';
 
-  select(role: Role): void {
-    this.selectedRole.set(role);
-    this.email = `${role === 'administrador' ? 'admin' : role}@legalcase.hn`;
-    this.password = 'demo1234';
-  }
-
+  /**
+   * Inicio de sesión solo con correo y contraseña. El rol lo determina el
+   * backend a partir del usuario; tras autenticar, el dashboard se adapta al
+   * rol recibido (administrador/abogado/cliente) automáticamente.
+   */
   submit(): void {
+    if (this.loading()) return;
     this.loading.set(true);
-    this.auth.login({ correo: this.email, contrasena: this.password, rol: this.selectedRole() }).subscribe({
+    this.auth.login({ correo: this.email.trim(), contrasena: this.password }).subscribe({
       next: () => { this.loading.set(false); this.router.navigate(['/app/dashboard']); },
-      error: () => { this.loading.set(false); this.toast.show({ title: 'No se pudo iniciar sesión', tone: 'warn' }); },
+      error: () => { this.loading.set(false); this.toast.show({ title: 'No se pudo iniciar sesión', msg: 'Verifique su correo y contraseña', tone: 'warn' }); },
     });
   }
 }

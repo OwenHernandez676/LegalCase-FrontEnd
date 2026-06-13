@@ -16,6 +16,7 @@ import { EventsService, monthShort } from '@core/services/events.service';
 import { MessagesService } from '@core/services/messages.service';
 import { LegalCase, Priority, RequestStatus } from '@core/models';
 import { CaseTimelineComponent } from '@features/cases/components/case-timeline/case-timeline.component';
+import { CaseKanbanComponent } from '@features/cases/components/case-kanban/case-kanban.component';
 
 /** Respaldo visual mientras cargan los expedientes del backend. */
 const EMPTY_CASE: LegalCase = {
@@ -37,7 +38,8 @@ const DONUT_C = 2 * Math.PI * DONUT_R;
   selector: 'lex-dashboard',
   standalone: true,
   imports: [RouterLink, PageHeadComponent, PanelComponent, KpiCardComponent, AvatarComponent,
-            IconComponent, StatusChipComponent, PriorityChipComponent, ChipComponent, CaseTimelineComponent],
+            IconComponent, StatusChipComponent, PriorityChipComponent, ChipComponent, CaseTimelineComponent,
+            CaseKanbanComponent],
   templateUrl: './dashboard.page.html',
 })
 export class DashboardPage {

@@ -7,3 +7,4 @@ export * from './event.model';
 export * from './message.model';
 export * from './notification.model';
 export * from './activity.model';
+export * from './task.model';

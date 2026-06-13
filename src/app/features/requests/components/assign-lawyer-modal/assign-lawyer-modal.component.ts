@@ -8,6 +8,7 @@ export interface AssignResult {
   lawyerId: string;
   lawyerName: string;
   prioridad: Priority;
+  observaciones: string;
 }
 
 @Component({
@@ -29,6 +30,7 @@ export class AssignLawyerModalComponent {
 
   readonly selectedLawyer = signal<string | null>(null);
   readonly priority = signal<Priority>('Media');
+  observaciones = '';
 
   selectLawyer(id: string): void { this.selectedLawyer.set(id); }
   setPriority(p: Priority): void { this.priority.set(p); }
@@ -37,6 +39,11 @@ export class AssignLawyerModalComponent {
     const id = this.selectedLawyer();
     if (!id) return;
     const lawyer = this.lawyers().find((l) => l.id === id);
-    this.create.emit({ lawyerId: id, lawyerName: lawyer?.nombre ?? '', prioridad: this.priority() });
+    this.create.emit({
+      lawyerId: id,
+      lawyerName: lawyer?.nombre ?? '',
+      prioridad: this.priority(),
+      observaciones: this.observaciones.trim(),
+    });
   }
 }
