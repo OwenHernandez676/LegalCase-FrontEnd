@@ -56,17 +56,20 @@ export class RequestsService {
   }
 
   /**
-   * Aprueba/rechaza una solicitud. Al aprobar, el abogado y la prioridad
-   * elegidos por el administrador se envían para que el backend los asigne al
-   * expediente creado (de lo contrario nacería "Sin asignar").
+   * Aprueba/rechaza una solicitud.
+   * - Al APROBAR: envía abogado y prioridad para que el backend cree el cliente,
+   *   el expediente (asignado) y dispare el correo de bienvenida.
+   * - Al RECHAZAR: envía el motivo (observaciones) que el backend persiste.
    */
-  resolve(id: string, estado: RequestStatus, assign?: { abogado?: string; prioridad?: Priority }): void {
+  resolve(id: string, estado: RequestStatus, opts?: { abogado?: string; prioridad?: Priority; motivo?: string }): void {
     // Optimista: el PATCH confirma; si se aprueba, el backend crea el expediente.
     this._requests.update((list) => list.map((r) => (r.id === id ? { ...r, estado } : r)));
     const body: Record<string, unknown> = { estado };
     if (estado === 'Aprobada') {
-      if (assign?.abogado) body['abogado'] = assign.abogado;
-      if (assign?.prioridad) body['prioridad'] = assign.prioridad;
+      if (opts?.abogado) body['abogado'] = opts.abogado;
+      if (opts?.prioridad) body['prioridad'] = opts.prioridad;
+    } else if (estado === 'Rechazada' && opts?.motivo?.trim()) {
+      body['motivo'] = opts.motivo.trim();
     }
     this.api.patch<ApiRequest>(`requests/${id}/resolve`, body).subscribe({
       next: (dto) => {

@@ -11,12 +11,14 @@ import { ToastService } from '@shared/components/toast/toast.service';
 import { LegalRequest, RequestStatus } from '@core/models';
 import { RequestDetailModalComponent } from './components/request-detail-modal/request-detail-modal.component';
 import { AssignLawyerModalComponent, AssignResult } from './components/assign-lawyer-modal/assign-lawyer-modal.component';
+import { ModalComponent } from '@shared/components/modal/modal.component';
 
 @Component({
   selector: 'lex-requests',
   standalone: true,
   imports: [PageHeadComponent, PanelComponent, KpiCardComponent, AvatarComponent, IconComponent,
-            PriorityChipComponent, ChipComponent, RequestDetailModalComponent, AssignLawyerModalComponent],
+            PriorityChipComponent, ChipComponent, RequestDetailModalComponent, AssignLawyerModalComponent,
+            ModalComponent],
   templateUrl: './requests.page.html',
 })
 export class RequestsPage {
@@ -34,6 +36,8 @@ export class RequestsPage {
 
   readonly viewing = signal<LegalRequest | null>(null);
   readonly approving = signal<LegalRequest | null>(null);
+  readonly rejecting = signal<LegalRequest | null>(null);
+  rejectMotivo = '';
 
   setFilter(f: RequestStatus | 'Todas'): void { this.filter.set(f); }
 
@@ -50,18 +54,25 @@ export class RequestsPage {
   onCreateExpediente(result: AssignResult): void {
     const req = this.approving();
     if (!req) return;
-    // Envía el abogado y la prioridad seleccionados para que queden asignados al expediente.
+    // Envía el abogado y la prioridad: el backend crea la cuenta del cliente,
+    // el expediente asignado y envía el correo de bienvenida con sus credenciales.
     this.svc.resolve(req.id, 'Aprobada', { abogado: result.lawyerName, prioridad: result.prioridad });
     this.toast.show({
-      title: 'Expediente creado correctamente',
-      msg: (req.codigo ?? req.id) + ' · ' + result.lawyerName,
+      title: 'Solicitud aprobada',
+      msg: `Cuenta de cliente creada y credenciales enviadas a ${req.correo}`,
       tone: 'success',
     });
     this.closeApprove();
   }
 
-  reject(r: LegalRequest): void {
-    this.svc.resolve(r.id, 'Rechazada');
+  openReject(r: LegalRequest): void { this.rejectMotivo = ''; this.rejecting.set(r); }
+  closeReject(): void { this.rejecting.set(null); }
+
+  confirmReject(): void {
+    const r = this.rejecting();
+    if (!r) return;
+    this.svc.resolve(r.id, 'Rechazada', { motivo: this.rejectMotivo });
     this.toast.show({ title: 'Solicitud rechazada', msg: r.codigo ?? r.id, tone: 'warn' });
+    this.closeReject();
   }
 }

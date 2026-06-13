@@ -7,8 +7,9 @@ import { ApiActivity, isObjectId, mapActivity } from './api.mappers';
 /**
  * Registro de actividad por expediente: fuente única de la línea de tiempo.
  * Se alimenta de GET /api/activities y GET /api/activities/case/:id.
- * El backend no expone POST /api/activities, por lo que log() mantiene la
- * entrada de forma local (optimista) para conservar la experiencia visual.
+ * log() inserta la entrada de forma optimista y la PERSISTE en el backend
+ * (POST /api/activities) cuando el expediente es real, reemplazándola por la
+ * entrada confirmada para que sobreviva a recargas.
  */
 @Injectable({ providedIn: 'root' })
 export class CaseActivityService {
@@ -62,7 +63,21 @@ export class CaseActivityService {
       ts: now.getTime(),
       time: now.toLocaleString('es', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
     };
+    // Insert optimista para respuesta inmediata en la UI.
     this._items.update((list) => [item, ...list]);
+
+    // Persistencia real: solo para expedientes del backend (ObjectId).
+    if (!isObjectId(entry.caseId)) return;
+    this.api.post<ApiActivity>('activities', {
+      expedienteId: entry.caseId,
+      tipo: entry.tipo,
+      descripcion: entry.detalle,
+      autor: entry.autor,
+    }).subscribe({
+      // Reemplaza la entrada optimista por la confirmada (id real del backend).
+      next: (dto) => this._items.update((list) =>
+        [mapActivity(dto), ...list.filter((a) => a.id !== item.id)]),
+    });
   }
 
   /** Une actividades del backend sin duplicar las ya presentes. */
