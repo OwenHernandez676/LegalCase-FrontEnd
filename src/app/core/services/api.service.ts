@@ -18,6 +18,10 @@ export class ApiService {
     if (params) for (const [k, v] of Object.entries(params)) httpParams = httpParams.set(k, String(v));
     return this.http.get<T>(`${this.base}/${path}`, { params: httpParams });
   }
+  /** GET que devuelve el cuerpo como Blob (descarga binaria real, con JWT vía interceptor). */
+  getBlob(path: string): Observable<Blob> {
+    return this.http.get(`${this.base}/${path}`, { responseType: 'blob' });
+  }
   post<T>(path: string, body: unknown): Observable<T> { return this.http.post<T>(`${this.base}/${path}`, body); }
   put<T>(path: string, body: unknown): Observable<T> { return this.http.put<T>(`${this.base}/${path}`, body); }
   patch<T>(path: string, body: unknown): Observable<T> { return this.http.patch<T>(`${this.base}/${path}`, body); }

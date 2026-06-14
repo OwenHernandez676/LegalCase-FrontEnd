@@ -4,7 +4,6 @@ import { ApiService } from './api.service';
 import { AuthStore } from '../store/auth.store';
 import { CasesService } from './cases.service';
 import { CaseActivityService } from './case-activity.service';
-import { NotificationService } from './notification.service';
 import { ApiEvent, mapEvent } from './api.mappers';
 
 /** Datos que recibe el formulario de creación de eventos. */
@@ -14,6 +13,10 @@ export interface EventInput {
   month: number;
   time: string;
   caseId?: string;
+  /** Tipo de evento (Audiencia | Reunión | Vencimiento). */
+  type?: 'Audiencia' | 'Reunión' | 'Vencimiento';
+  /** Descripción / detalle del evento. */
+  description?: string;
 }
 
 export const MONTHS_ES = [
@@ -41,7 +44,6 @@ export class EventsService {
   private readonly auth = inject(AuthStore);
   private readonly cases = inject(CasesService);
   private readonly activity = inject(CaseActivityService);
-  private readonly notifs = inject(NotificationService);
 
   private readonly _events = signal<CalendarEvent[]>([]);
   readonly events = this._events.asReadonly();
@@ -73,11 +75,13 @@ export class EventsService {
   add(data: EventInput, autor: string): void {
     const [hh, mm] = data.time.split(':').map(Number);
     const fecha = new Date(YEAR, data.month - 1, data.day, hh || 9, mm || 0);
+    const descripcion = data.description?.trim();
     // El backend solo acepta Audiencia | Reunión | Vencimiento.
     const body = {
       titulo: data.title,
-      tipo: 'Reunión',
+      tipo: data.type ?? 'Reunión',
       fecha: fecha.toISOString(),
+      ...(descripcion ? { descripcion } : {}),
       ...(data.caseId ? { expedienteId: data.caseId } : {}),
     };
     this.api.post<ApiEvent>('events', body).subscribe({
@@ -86,28 +90,20 @@ export class EventsService {
         this._events.update((list) => [...list, event]);
 
         if (event.caseId) {
-          const codigo = this.cases.cases().find((c) => c.id === event.caseId)?.codigo ?? event.caseId;
+          // La línea de tiempo conserva título, fecha y descripción del evento
+          // (el backend regenera el título genérico al recargar, así que toda la
+          // información relevante va en el detalle para que sobreviva).
+          const cuando = `${event.day} ${monthShort(event.month)} ${YEAR} · ${event.time}`;
+          const detalle = `"${event.title}" · ${cuando}${descripcion ? ` — ${descripcion}` : ''}`;
           this.activity.log({
             caseId: event.caseId,
             tipo: 'evento',
             titulo: 'Evento programado: ' + event.title,
-            detalle: `${event.day} ${monthShort(event.month)} ${YEAR} · ${event.time}`,
+            detalle,
             autor,
           });
-          this.notifs.push({
-            tipo: 'evento',
-            mensaje: `${autor} programó "${event.title}" en ${codigo}`,
-            icon: 'cal',
-            route: '/app/calendar',
-          });
-        } else {
-          this.notifs.push({
-            tipo: 'evento',
-            mensaje: `${autor} programó "${event.title}"`,
-            icon: 'cal',
-            route: '/app/calendar',
-          });
         }
+        // Las notificaciones a los participantes las emite el backend en tiempo real.
       },
     });
   }

@@ -9,8 +9,8 @@ import { CaseActivityService } from '@core/services/case-activity.service';
 import { NotificationService } from '@core/services/notification.service';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { AuthStore } from '@core/store/auth.store';
-import { LegalCase } from '@core/models';
-import { fileExt, fileSize } from '@core/utils/file.util';
+import { LegalCase, LegalDocument } from '@core/models';
+import { apiErrorMessage } from '@core/utils/http-error.util';
 import { CaseKanbanComponent } from '../case-kanban/case-kanban.component';
 import { CaseTimelineComponent } from '../case-timeline/case-timeline.component';
 
@@ -83,25 +83,28 @@ export class CaseDetailModalComponent {
     this.toggleNoteForm();
   }
 
-  // ---- Subir documento ----
+  // ---- Subir documento (contenido real, descargable) ----
   onFileSelected(input: HTMLInputElement): void {
     const file = input.files?.[0];
     if (!file) return;
     const autor = this.auth.user()?.nombre ?? 'Abogado';
-    this.catalog.addDocument({
-      name: file.name, ext: fileExt(file.name), size: fileSize(file.size),
-      caseId: this.case.id, by: autor,
+    this.catalog.uploadDocument(this.case.id, autor, file).subscribe({
+      next: () => {
+        this.activity.log({
+          caseId: this.case.id, tipo: 'documento',
+          titulo: 'Documento agregado al expediente', detalle: `"${file.name}"`, autor,
+        });
+        this.toast.show({ title: 'Documento subido', msg: file.name, tone: 'success' });
+      },
+      error: (e) => this.toast.show({ title: 'No se pudo subir el documento', msg: apiErrorMessage(e), tone: 'warn' }),
     });
-    this.activity.log({
-      caseId: this.case.id, tipo: 'documento',
-      titulo: 'Documento agregado al expediente', detalle: `"${file.name}"`, autor,
-    });
-    this.notifs.push({
-      tipo: 'documento',
-      mensaje: `${autor} subió "${file.name}" a ${this.codigo}`,
-      icon: 'doc', route: '/app/cases',
-    });
-    this.toast.show({ title: 'Documento subido', msg: file.name, tone: 'success' });
     input.value = '';
+  }
+
+  /** Descarga real del documento (binario con permisos verificados en el backend). */
+  download(doc: LegalDocument): void {
+    this.catalog.download(doc).subscribe({
+      error: (e) => this.toast.show({ title: 'No se pudo descargar', msg: apiErrorMessage(e), tone: 'warn' }),
+    });
   }
 }

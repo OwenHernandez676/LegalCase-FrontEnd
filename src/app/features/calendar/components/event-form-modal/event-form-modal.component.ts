@@ -18,9 +18,12 @@ export class EventFormModalComponent {
   readonly cases = inject(CasesService).cases;
 
   readonly months = MONTHS_ES;
+  readonly types: ('Audiencia' | 'Reunión' | 'Vencimiento')[] = ['Audiencia', 'Reunión', 'Vencimiento'];
 
   readonly form = this.fb.nonNullable.group({
     title: '',
+    type: 'Reunión' as 'Audiencia' | 'Reunión' | 'Vencimiento',
+    description: '',
     month: 5,
     day: 1,
     time: '09:00',
@@ -39,6 +42,9 @@ export class EventFormModalComponent {
     if (!v.title.trim()) return;
     const month = Number(v.month);
     const day = Math.min(Number(v.day), this.days().length);
-    this.save.emit({ title: v.title.trim(), month, day, time: v.time, caseId: v.caseId });
+    this.save.emit({
+      title: v.title.trim(), type: v.type, description: v.description.trim(),
+      month, day, time: v.time, caseId: v.caseId,
+    });
   }
 }

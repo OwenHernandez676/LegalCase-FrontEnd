@@ -6,6 +6,7 @@ import { AuthStore } from '@core/store/auth.store';
 import { UiStore } from '@core/store/ui.store';
 import { AuthService } from '@core/services/auth.service';
 import { NotificationService } from '@core/services/notification.service';
+import { RealtimeService } from '@core/services/realtime.service';
 import { AppNotification, NotificationType, Role } from '@core/models';
 
 interface NavItem { label: string; icon: any; path: string; roles: Role[]; }
@@ -43,6 +44,8 @@ export class AppLayoutComponent {
   readonly notifs = inject(NotificationService);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  // Instancia el canal de tiempo real (Socket.IO) al montar el shell tras el login.
+  private readonly realtime = inject(RealtimeService);
 
   readonly nav = computed(() => {
     const role = this.auth.role();

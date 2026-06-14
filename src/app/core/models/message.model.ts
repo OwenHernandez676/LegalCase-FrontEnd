@@ -7,6 +7,8 @@ export interface ChatAttachment {
   ext: FileType;
   /** URL temporal (object URL) para descargar lo subido en esta sesión. */
   url?: string;
+  /** Id del mensaje en el backend, para descargar el adjunto persistido (GET /messages/:id/attachment). */
+  msgId?: string;
 }
 
 export interface ChatMessage {

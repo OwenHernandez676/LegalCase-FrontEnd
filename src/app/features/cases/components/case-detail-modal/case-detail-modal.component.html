@@ -13,7 +13,7 @@
   <div class="tabs">
     <button [class.on]="tab() === 'timeline'" (click)="setTab('timeline')">Línea de tiempo</button>
     <button [class.on]="tab() === 'docs'" (click)="setTab('docs')">Documentos</button>
-    <button [class.on]="tab() === 'kanban'" (click)="setTab('kanban')">Tareas</button>
+    <button [class.on]="tab() === 'kanban'" (click)="setTab('kanban')">Estado</button>
   </div>
 
   <!-- ===== Línea de tiempo ===== -->
@@ -58,7 +58,7 @@
             <span class="doc-ic"><lex-icon name="doc" [size]="16" /></span>
             <div class="doc-info"><b>{{ d.name }}</b><span class="muted">{{ d.size }} · {{ d.by }} · {{ d.date }}</span></div>
             <span class="doc-ext">{{ d.ext }}</span>
-            <button class="doc-dl" title="Descargar"><lex-icon name="download" [size]="15" /></button>
+            <button class="doc-dl" title="Descargar" (click)="download(d)"><lex-icon name="download" [size]="15" /></button>
           </div>
         }
       </div>

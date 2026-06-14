@@ -3,9 +3,8 @@ import { ChatMessage, Conversation, LegalCase, Role } from '../models';
 import { ApiService } from './api.service';
 import { AuthStore } from '../store/auth.store';
 import { CasesService } from './cases.service';
-import { NotificationService } from './notification.service';
-import { fileExt, fileSize } from '../utils/file.util';
-import { ApiMessage, isObjectId, mapMessage } from './api.mappers';
+import { fileExt, fileSize, fileToBase64, downloadBlob } from '../utils/file.util';
+import { ApiMessage, isObjectId, mapMessage, toApiFileType } from './api.mappers';
 
 /**
  * Mensajería Cliente ↔ Abogado sobre la API real: cada expediente es una
@@ -17,7 +16,6 @@ export class MessagesService {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthStore);
   private readonly casesSvc = inject(CasesService);
-  private readonly notifs = inject(NotificationService);
 
   /** Historial por expediente y contadores de no leídos. */
   private readonly _messages = signal<Record<string, ChatMessage[]>>({});
@@ -82,19 +80,26 @@ export class MessagesService {
   }
 
   /**
-   * Envía un archivo adjunto. El backend solo persiste texto, así que se
-   * registra el mensaje con la referencia del archivo y el adjunto queda
-   * disponible localmente (object URL) durante la sesión.
+   * Envía un archivo adjunto REAL: lee el archivo como base64, lo persiste en el
+   * backend junto al mensaje y lo agrega a la conversación. El adjunto queda
+   * descargable tanto para el emisor (object URL local) como para el receptor
+   * (descarga autenticada desde el backend).
    */
-  sendFile(convId: string, file: File): void {
+  async sendFile(convId: string, file: File): Promise<void> {
     const me = this.auth.user()?.nombre ?? '';
     const conv = this.conversations().find((c) => c.id === convId);
     const size = fileSize(file.size);
+    const contenido = await fileToBase64(file);
     this.api.post<ApiMessage>('messages', {
       expedienteId: convId,
       emisor: me,
       receptor: conv?.nombre ?? '',
       texto: `📎 ${file.name} (${size})`,
+      adjuntoNombre: file.name,
+      adjuntoTipo: toApiFileType(fileExt(file.name)),
+      adjuntoTamano: size,
+      adjuntoMime: file.type || 'application/octet-stream',
+      adjuntoContenido: contenido,
     }).subscribe({
       next: (dto) => {
         const msg = mapMessage(dto, me);
@@ -105,17 +110,47 @@ export class MessagesService {
             name: file.name,
             size,
             ext: fileExt(file.name),
-            url: URL.createObjectURL(file),
+            url: URL.createObjectURL(file), // descarga inmediata para el emisor
+            msgId: dto.id,
           },
-        });
-        this.notifs.push({
-          tipo: 'documento',
-          mensaje: `Archivo enviado a ${conv?.nombre ?? 'la conversación'}: ${file.name}`,
-          icon: 'doc',
-          route: '/app/messages',
         });
       },
     });
+  }
+
+  /** Descarga el adjunto de un mensaje (local si está en sesión; si no, del backend). */
+  downloadAttachment(msg: ChatMessage): void {
+    const a = msg.attachment;
+    if (!a) return;
+    if (a.url) { this.anchorDownload(a.url, a.name); return; }
+    if (a.msgId) {
+      this.api.getBlob(`messages/${a.msgId}/attachment`).subscribe({
+        next: (blob) => downloadBlob(blob, a.name),
+      });
+    }
+  }
+
+  private anchorDownload(url: string, name: string): void {
+    const el = document.createElement('a');
+    el.href = url; el.download = name;
+    document.body.appendChild(el); el.click(); el.remove();
+  }
+
+  /**
+   * Mensaje recibido en vivo (Socket.IO). Lo agrega a la conversación si
+   * pertenece a un expediente del usuario y no es un eco de su propio envío.
+   */
+  receiveRealtime(dto: ApiMessage): void {
+    const me = this.auth.user()?.nombre ?? '';
+    if (dto.emisor === me) return; // ya se agregó de forma optimista al enviarlo
+    const convId = dto.expedienteId;
+    if (!this.casesSvc.cases().some((c) => c.id === convId)) return; // no es mi conversación
+    const existing = this._messages()[convId] ?? [];
+    if (existing.some((m) => m.id === dto.id)) return;
+    this.append(convId, mapMessage(dto, me));
+    if (this.activeId() !== convId) {
+      this._unread.update((u) => ({ ...u, [convId]: (u[convId] ?? 0) + 1 }));
+    }
   }
 
   private toConversation(c: LegalCase, role: Role): Conversation {

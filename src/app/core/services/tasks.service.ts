@@ -1,7 +1,8 @@
-import { Injectable, signal, inject, untracked } from '@angular/core';
+import { Injectable, computed, effect, signal, inject, untracked } from '@angular/core';
 import { Observable, map, tap } from 'rxjs';
 import { CaseStatus, LegalTask, Priority } from '../models';
 import { ApiService } from './api.service';
+import { AuthStore } from '../store/auth.store';
 import { ApiTask, isObjectId, mapTask } from './api.mappers';
 
 /** Datos para crear/editar una tarea desde el tablero. */
@@ -21,12 +22,39 @@ export interface TaskInput {
 @Injectable({ providedIn: 'root' })
 export class TasksService {
   private readonly api = inject(ApiService);
+  private readonly auth = inject(AuthStore);
 
   private readonly _items = signal<LegalTask[]>([]);
   readonly items = this._items.asReadonly();
 
   /** Expedientes cuya lista de tareas ya fue solicitada al backend. */
   private readonly fetched = new Set<string>();
+  private _allLoaded = false;
+
+  /** Tareas no finalizadas del usuario autenticado (KPI del dashboard). */
+  readonly pendingCount = computed(() =>
+    this._items().filter((t) => t.estado !== 'Finalizado').length);
+
+  constructor() {
+    effect(() => {
+      if (this.auth.isAuthenticated()) {
+        untracked(() => { if (!this._allLoaded) this.loadAll(); });
+      } else {
+        this._items.set([]);
+        this._allLoaded = false;
+        this.fetched.clear();
+      }
+    });
+  }
+
+  /** Carga todas las tareas del usuario; el backend filtra por rol automáticamente. */
+  loadAll(): void {
+    this._allLoaded = true;
+    this.api.get<ApiTask[]>('tasks').subscribe({
+      next: (list) => this.merge(list.map(mapTask)),
+      error: () => {},
+    });
+  }
 
   /** Tareas de un expediente; dispara la carga la primera vez. */
   byCase(caseId: string): LegalTask[] {

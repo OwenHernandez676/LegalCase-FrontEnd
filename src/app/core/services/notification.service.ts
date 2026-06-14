@@ -39,6 +39,16 @@ export class NotificationService {
     this._items.update((list) => [item, ...list]);
   }
 
+  /**
+   * Inserta una notificación recibida en vivo (Socket.IO) sin recargar.
+   * Llega ya dirigida al usuario por el backend; la campana se actualiza sola.
+   */
+  addRealtime(dto: ApiNotification): void {
+    const item = mapNotification(dto);
+    this._items.update((list) =>
+      list.some((n) => n.id === item.id) ? list : [item, ...list]);
+  }
+
   /** Marca local: el backend solo expone marcado masivo (read-all). */
   markRead(id: string): void {
     this._items.update((list) => list.map((n) => (n.id === id ? { ...n, leida: true } : n)));

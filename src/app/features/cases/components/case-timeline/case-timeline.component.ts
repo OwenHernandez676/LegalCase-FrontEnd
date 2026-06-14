@@ -1,4 +1,4 @@
-import { Component, Input, computed, inject } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { CaseActivityService } from '@core/services/case-activity.service';
 import { CaseActivityType } from '@core/models';
@@ -49,13 +49,14 @@ const ACTIVITY_META: Record<CaseActivityType, { icon: any; color: string }> = {
   `],
 })
 export class CaseTimelineComponent {
-  @Input({ required: true }) caseId!: string;
+  /** Signal input: el `computed` reacciona cuando el id del caso llega (1er render). */
+  readonly caseId = input.required<string>();
 
   private readonly activity = inject(CaseActivityService);
 
   readonly timeline = computed(() => {
     this.activity.items(); // dependencia reactiva
-    return this.activity.byCase(this.caseId);
+    return this.activity.byCase(this.caseId());
   });
 
   meta(tipo: CaseActivityType): { icon: any; color: string } { return ACTIVITY_META[tipo]; }
