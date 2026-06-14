@@ -7,6 +7,17 @@
       <input class="input" type="text" formControlName="title" placeholder="Ej. Audiencia preliminar" />
     </div>
     <div class="field">
+      <label>Tipo <span class="req">*</span></label>
+      <select class="select" formControlName="type">
+        @for (t of types; track t) { <option [value]="t">{{ t }}</option> }
+      </select>
+    </div>
+    <div class="field">
+      <label>Descripción</label>
+      <textarea class="input" rows="3" formControlName="description"
+        placeholder="Detalle del evento: agenda, sala, instrucciones para el cliente…"></textarea>
+    </div>
+    <div class="field">
       <label>Expediente relacionado</label>
       <select class="select" formControlName="caseId">
         <option value="">— Sin expediente —</option>

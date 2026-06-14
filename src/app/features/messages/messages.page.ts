@@ -4,7 +4,7 @@ import { AvatarComponent } from '@shared/components/avatar/avatar.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { AuthStore } from '@core/store/auth.store';
 import { MessagesService } from '@core/services/messages.service';
-import { Conversation } from '@core/models';
+import { ChatMessage, Conversation } from '@core/models';
 
 @Component({
   selector: 'lex-messages',
@@ -49,7 +49,10 @@ export class MessagesPage {
   sendFile(input: HTMLInputElement): void {
     const file = input.files?.[0];
     const conv = this.active();
-    if (file && conv) this.svc.sendFile(conv.id, file);
+    if (file && conv) void this.svc.sendFile(conv.id, file);
     input.value = '';
   }
+
+  /** Descarga el archivo adjunto de un mensaje (emisor y receptor). */
+  download(m: ChatMessage): void { this.svc.downloadAttachment(m); }
 }

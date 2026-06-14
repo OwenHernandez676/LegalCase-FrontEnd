@@ -58,6 +58,7 @@ export interface ApiNotification {
 export interface ApiMessage {
   id: string; expedienteId: string; emisor: string; receptor: string;
   texto: string; leido: boolean; createdAt?: string;
+  adjunto?: { nombre: string; tipo: FileType; tamano: string; mime: string } | null;
 }
 
 /* ===== Utilidades de formato (mantienen la experiencia visual previa) ===== */
@@ -234,10 +235,21 @@ export function mapNotification(dto: ApiNotification): AppNotification {
 }
 
 export function mapMessage(dto: ApiMessage, myName: string): ChatMessage {
-  return {
+  const msg: ChatMessage = {
     id: dto.id,
     me: dto.emisor === myName,
     text: dto.texto,
     time: fmtTime(dto.createdAt),
   };
+  // Adjunto persistido: se descarga del backend (con permisos) usando el id del mensaje.
+  if (dto.adjunto) {
+    msg.text = '';
+    msg.attachment = {
+      name: dto.adjunto.nombre,
+      size: dto.adjunto.tamano,
+      ext: dto.adjunto.tipo,
+      msgId: dto.id,
+    };
+  }
+  return msg;
 }

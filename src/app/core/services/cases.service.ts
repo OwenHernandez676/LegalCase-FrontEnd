@@ -34,6 +34,12 @@ export class CasesService {
 
   byStatus(status: CaseStatus): LegalCase[] { return this._cases().filter((c) => c.estado === status); }
 
+  /** Aplica en vivo (Socket.IO) un cambio de estado recibido del backend, sin recargar. */
+  applyStatusRealtime(id: string, estado: CaseStatus, progreso: number): void {
+    this._cases.update((list) =>
+      list.map((c) => (c.id === id ? { ...c, estado, progreso } : c)));
+  }
+
   updateStatus(id: string, estado: CaseStatus): void {
     // Actualización optimista; el PATCH confirma y el backend recalcula el progreso.
     this._cases.update((list) =>

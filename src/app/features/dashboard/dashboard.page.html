@@ -69,14 +69,14 @@
 <!-- ====================== ABOGADO ====================== -->
 @if (role() === 'abogado') {
   <lex-page-head title="Buenos días, {{ auth.user()?.nombre }}"
-    sub="Tiene 3 audiencias esta semana y 5 tareas pendientes" [crumbs]="['LEGALCASE','Mi Espacio','Dashboard']">
+    sub="Resumen de sus expedientes y su agenda" [crumbs]="['LEGALCASE','Mi Espacio','Dashboard']">
     <a routerLink="/app/cases" class="btn btn-gold btn-sm"><lex-icon name="folder" [size]="15" /> Mis expedientes</a>
   </lex-page-head>
 
   <div class="grid kpi-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
-    <lex-kpi-card icon="folder" label="Casos activos" [value]="cases.active()" delta="+2" />
-    <lex-kpi-card icon="list" label="Tareas pendientes" value="5" iconBg="var(--blue-soft)" iconColor="var(--blue)" />
-    <lex-kpi-card icon="cal" label="Audiencias semana" value="3" iconBg="var(--danger-soft)" iconColor="var(--danger)" />
+    <lex-kpi-card icon="folder" label="Casos activos" [value]="cases.active()" />
+    <lex-kpi-card icon="list" label="En proceso" [value]="casesInProgress()" iconBg="var(--blue-soft)" iconColor="var(--blue)" />
+    <lex-kpi-card icon="cal" label="Audiencias semana" [value]="audienciasWeek()" iconBg="var(--danger-soft)" iconColor="var(--danger)" />
   </div>
 
   <div class="grid" style="grid-template-columns:1.6fr 1fr">
@@ -94,7 +94,7 @@
       }
     </lex-panel>
     <lex-panel title="Próximos eventos">
-      @for (e of events(); track e.id) {
+      @for (e of lawyerEvents(); track e.id) {
         <div class="ev"><div class="ev-day" [style.color]="e.color">{{ e.day }}</div>
           <div><div class="ev-t">{{ e.title }}</div><span class="ft">{{ e.day }} {{ monthShort(e.month) }} · {{ e.time }}</span></div></div>
       }
@@ -111,12 +111,6 @@
     <!-- Línea de tiempo del caso (principal) -->
     <lex-panel title="Línea de tiempo del caso" sub="Actualizaciones registradas por su abogado">
       <app-case-timeline [caseId]="clientCase().id" />
-
-      <div style="margin-top:20px;padding-top:18px;border-top:1px solid var(--line)">
-        <h3 style="font-size:14px;margin:0 0 4px">Avance del caso</h3>
-        <p class="muted" style="font-size:12.5px;margin:0 0 12px">Tareas que su abogado gestiona en este expediente</p>
-        <app-case-kanban [caseId]="clientCase().id" [editable]="false" />
-      </div>
     </lex-panel>
 
     <div class="col">
@@ -143,7 +137,7 @@
             <span class="cdoc-ic"><lex-icon name="doc" [size]="16" /></span>
             <div class="cdoc-info"><b>{{ d.name }}</b>
               <span class="muted">{{ d.date }} · {{ d.size }}</span></div>
-            <button class="cdoc-dl" title="Descargar"><lex-icon name="download" [size]="15" /></button>
+            <button class="cdoc-dl" title="Descargar" (click)="downloadDoc(d)"><lex-icon name="download" [size]="15" /></button>
           </div>
         } @empty {
           <p class="muted" style="font-size:13px">Aún no hay documentos compartidos.</p>

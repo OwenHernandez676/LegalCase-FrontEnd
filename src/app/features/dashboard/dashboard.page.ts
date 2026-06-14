@@ -14,9 +14,8 @@ import { RequestsService } from '@core/services/requests.service';
 import { CatalogService } from '@core/services/catalog.service';
 import { EventsService, monthShort } from '@core/services/events.service';
 import { MessagesService } from '@core/services/messages.service';
-import { LegalCase, Priority, RequestStatus } from '@core/models';
+import { CaseStatus, LegalCase, LegalDocument, Priority, RequestStatus } from '@core/models';
 import { CaseTimelineComponent } from '@features/cases/components/case-timeline/case-timeline.component';
-import { CaseKanbanComponent } from '@features/cases/components/case-kanban/case-kanban.component';
 
 /** Respaldo visual mientras cargan los expedientes del backend. */
 const EMPTY_CASE: LegalCase = {
@@ -38,8 +37,7 @@ const DONUT_C = 2 * Math.PI * DONUT_R;
   selector: 'lex-dashboard',
   standalone: true,
   imports: [RouterLink, PageHeadComponent, PanelComponent, KpiCardComponent, AvatarComponent,
-            IconComponent, StatusChipComponent, PriorityChipComponent, ChipComponent, CaseTimelineComponent,
-            CaseKanbanComponent],
+            IconComponent, StatusChipComponent, PriorityChipComponent, ChipComponent, CaseTimelineComponent],
   templateUrl: './dashboard.page.html',
 })
 export class DashboardPage {
@@ -54,8 +52,35 @@ export class DashboardPage {
   readonly role = this.auth.role;
   readonly recentCases = computed(() => this.cases.cases().slice(0, 4));
   readonly recentRequests = computed(() => this.requests.requests().slice(0, 4));
-  /** Próximos eventos sincronizados con el módulo de calendario. */
-  readonly events = this.eventsSvc.upcoming;
+
+  // ---- Dashboard del abogado — KPIs reales ----
+  /** Expedientes del abogado en estado "En proceso" (avance real, sin tareas). */
+  readonly casesInProgress = computed(() =>
+    this.cases.cases().filter((c) => c.estado === ('En proceso' as CaseStatus)).length);
+
+  /** Audiencias de esta semana vinculadas a los expedientes del abogado. */
+  readonly audienciasWeek = computed(() => {
+    const today = new Date();
+    const dayN = today.getDay(); // 0=Dom
+    const startMs = new Date(today).setHours(0, 0, 0, 0) - dayN * 86400000;
+    const endMs = startMs + 7 * 86400000;
+    const myCaseIds = new Set(this.cases.cases().map((c) => c.id));
+    return this.eventsSvc.events().filter((e) => {
+      if (!e.caseId || !myCaseIds.has(e.caseId)) return false;
+      if (e.type !== 'Audiencia') return false;
+      const d = new Date(2026, e.month - 1, e.day).getTime();
+      return d >= startMs && d < endMs;
+    }).length;
+  });
+
+  /** Próximos eventos solo de los expedientes asignados al abogado. */
+  readonly lawyerEvents = computed(() => {
+    const myCaseIds = new Set(this.cases.cases().map((c) => c.id));
+    return [...this.eventsSvc.events()]
+      .filter((e) => e.caseId && myCaseIds.has(e.caseId))
+      .sort((a, b) => (a.month - b.month) || (a.day - b.day))
+      .slice(0, 5);
+  });
 
   // ---- Portal del cliente ----
   /** Expediente del cliente autenticado (por nombre); nunca lanza con lista vacía. */
@@ -67,6 +92,9 @@ export class DashboardPage {
   /** Documentos compartidos por el abogado en el caso del cliente. */
   readonly clientDocs = computed(() =>
     this.catalog.documents().filter((d) => d.caseId === this.clientCase().id));
+
+  /** Descarga real de un documento del expediente del cliente. */
+  downloadDoc(doc: LegalDocument): void { this.catalog.download(doc).subscribe({ error: () => {} }); }
   /** Abogado asignado al caso del cliente (datos completos del catálogo). */
   readonly assignedLawyer = computed(() => {
     const name = this.clientCase().abogado;

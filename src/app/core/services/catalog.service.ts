@@ -1,9 +1,10 @@
 import { Injectable, signal, computed, effect, inject } from '@angular/core';
-import { Observable, map, tap } from 'rxjs';
+import { Observable, from, map, switchMap, tap } from 'rxjs';
 import { LegalDocument, User } from '../models';
 import { ApiService } from './api.service';
 import { AuthStore } from '../store/auth.store';
 import { ApiDocument, ApiUser, mapDocument, mapUser, toApiFileType } from './api.mappers';
+import { fileExt, fileSize, fileToBase64, downloadBlob } from '../utils/file.util';
 
 /** Datos que recibe el formulario de alta/edición de abogados. */
 export interface LawyerInput {
@@ -55,16 +56,38 @@ export class CatalogService {
     });
   }
 
-  addDocument(doc: Omit<LegalDocument, 'id' | 'date'>): void {
-    this.api.post<ApiDocument>('documents', {
-      nombre: doc.name,
-      tipo: toApiFileType(doc.ext),
-      tamano: doc.size,
-      expedienteId: doc.caseId,
-      subidoPor: doc.by,
-    }).subscribe({
-      next: (dto) => this._documents.update((list) => [mapDocument(dto), ...list]),
-    });
+  /**
+   * Sube un documento real: lee el archivo como base64 y lo persiste con su
+   * contenido binario en el backend, de modo que pueda descargarse después.
+   */
+  uploadDocument(caseId: string, by: string, file: File): Observable<LegalDocument> {
+    return from(fileToBase64(file)).pipe(
+      switchMap((contenido) => this.api.post<ApiDocument>('documents', {
+        nombre: file.name,
+        tipo: toApiFileType(fileExt(file.name)),
+        tamano: fileSize(file.size),
+        expedienteId: caseId,
+        subidoPor: by,
+        mimeType: file.type || 'application/octet-stream',
+        contenido,
+      })),
+      map(mapDocument),
+      tap((doc) => this._documents.update((list) => [doc, ...list.filter((d) => d.id !== doc.id)])),
+    );
+  }
+
+  /** Descarga real del documento (stream binario con permisos verificados en el backend). */
+  download(doc: LegalDocument): Observable<Blob> {
+    return this.api.getBlob(`documents/${doc.id}/download`).pipe(
+      tap((blob) => downloadBlob(blob, doc.name)),
+    );
+  }
+
+  /** Inserta en vivo (Socket.IO) un documento recién creado, sin recargar. */
+  addRealtime(dto: ApiDocument): void {
+    const doc = mapDocument(dto);
+    this._documents.update((list) =>
+      list.some((d) => d.id === doc.id) ? list : [doc, ...list]);
   }
 
   /**
