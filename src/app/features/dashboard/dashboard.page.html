@@ -73,10 +73,8 @@
     <a routerLink="/app/cases" class="btn btn-gold btn-sm"><lex-icon name="folder" [size]="15" /> Mis expedientes</a>
   </lex-page-head>
 
-  <div class="grid kpi-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
+  <div class="grid" style="grid-template-columns:280px;margin-bottom:18px">
     <lex-kpi-card icon="folder" label="Casos activos" [value]="cases.active()" />
-    <lex-kpi-card icon="list" label="En proceso" [value]="casesInProgress()" iconBg="var(--blue-soft)" iconColor="var(--blue)" />
-    <lex-kpi-card icon="cal" label="Audiencias semana" [value]="audienciasWeek()" iconBg="var(--danger-soft)" iconColor="var(--danger)" />
   </div>
 
   <div class="grid" style="grid-template-columns:1.6fr 1fr">
