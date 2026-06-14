@@ -14,7 +14,7 @@ import { RequestsService } from '@core/services/requests.service';
 import { CatalogService } from '@core/services/catalog.service';
 import { EventsService, monthShort } from '@core/services/events.service';
 import { MessagesService } from '@core/services/messages.service';
-import { CaseStatus, LegalCase, LegalDocument, Priority, RequestStatus } from '@core/models';
+import { LegalCase, LegalDocument, Priority, RequestStatus } from '@core/models';
 import { CaseTimelineComponent } from '@features/cases/components/case-timeline/case-timeline.component';
 
 /** Respaldo visual mientras cargan los expedientes del backend. */
@@ -53,26 +53,7 @@ export class DashboardPage {
   readonly recentCases = computed(() => this.cases.cases().slice(0, 4));
   readonly recentRequests = computed(() => this.requests.requests().slice(0, 4));
 
-  // ---- Dashboard del abogado — KPIs reales ----
-  /** Expedientes del abogado en estado "En proceso" (avance real, sin tareas). */
-  readonly casesInProgress = computed(() =>
-    this.cases.cases().filter((c) => c.estado === ('En proceso' as CaseStatus)).length);
-
-  /** Audiencias de esta semana vinculadas a los expedientes del abogado. */
-  readonly audienciasWeek = computed(() => {
-    const today = new Date();
-    const dayN = today.getDay(); // 0=Dom
-    const startMs = new Date(today).setHours(0, 0, 0, 0) - dayN * 86400000;
-    const endMs = startMs + 7 * 86400000;
-    const myCaseIds = new Set(this.cases.cases().map((c) => c.id));
-    return this.eventsSvc.events().filter((e) => {
-      if (!e.caseId || !myCaseIds.has(e.caseId)) return false;
-      if (e.type !== 'Audiencia') return false;
-      const d = new Date(2026, e.month - 1, e.day).getTime();
-      return d >= startMs && d < endMs;
-    }).length;
-  });
-
+  // ---- Dashboard del abogado ----
   /** Próximos eventos solo de los expedientes asignados al abogado. */
   readonly lawyerEvents = computed(() => {
     const myCaseIds = new Set(this.cases.cases().map((c) => c.id));
