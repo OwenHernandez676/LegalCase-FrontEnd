@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
   /** URL base de la API NestJS. Cambiar al desplegar. */
-  apiUrl: 'http://localhost:3000/api',
+  apiUrl: 'https://lecalcase-backend.onrender.com/api',
   tokenKey: 'legalcase.token',
 };
 
