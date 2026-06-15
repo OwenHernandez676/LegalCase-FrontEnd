@@ -3,7 +3,7 @@ import { CaseStatus, CaseType, Priority } from './enums';
 export interface LegalCase {
   /** Identificador real (ObjectId de Mongo) usado en las llamadas a la API. */
   id: string;
-  /** Código visible para humanos (EXP-####). */
+  /** Código visible (EXP-####). */
   codigo?: string;
   titulo: string;
   cliente: string;
